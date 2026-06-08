@@ -104,14 +104,13 @@
 
 import gradio as gr
 
-def predict():
-    return "Advisor is running successfully"
+def predict(x):
+    return "Advisor working"
 
 demo = gr.Interface(
     fn=predict,
-    inputs=[],
-    outputs="text",
-    title="Advisor"
+    inputs="text",
+    outputs="text"
 )
 
 demo.launch()

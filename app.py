@@ -104,8 +104,9 @@
 
 import gradio as gr
 
-def predict():
-    return "Advisor working"
+demo = gr.Blocks()
 
-demo = gr.Interface(predict, [], "text")
-demo.launch()
+with demo:
+    gr.Markdown("Hello")
+
+demo.launch(server_name="0.0.0.0", server_port=7860)

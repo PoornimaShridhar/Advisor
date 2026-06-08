@@ -104,13 +104,8 @@
 
 import gradio as gr
 
-def predict(x):
+def predict():
     return "Advisor working"
 
-demo = gr.Interface(
-    fn=predict,
-    inputs="text",
-    outputs="text"
-)
-
+demo = gr.Interface(predict, [], "text")
 demo.launch()

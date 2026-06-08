@@ -106,9 +106,8 @@ import gradio as gr
 
 def build_app():
     with gr.Blocks() as demo:
-        gr.Markdown("Hello from HF Space")
+        gr.Markdown("Hello from Advisor")
     return demo
 
 demo = build_app()
-
 demo.launch()

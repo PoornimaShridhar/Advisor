@@ -104,10 +104,14 @@
 
 import gradio as gr
 
-def build_app():
-    with gr.Blocks() as demo:
-        gr.Markdown("Hello from Advisor")
-    return demo
+def predict():
+    return "Advisor is running successfully"
 
-demo = build_app()
+demo = gr.Interface(
+    fn=predict,
+    inputs=[],
+    outputs="text",
+    title="Advisor"
+)
+
 demo.launch()

@@ -102,17 +102,20 @@
 
 # demo.launch()
 
-print("STARTING APP")
-
 import gradio as gr
+
+print("STARTING APP")
 
 demo = gr.Blocks()
 
 with demo:
-    gr.Markdown("HELLO WORLD")
+    gr.Markdown("Hello")
 
 print("BEFORE LAUNCH")
 
-demo.launch(server_name="0.0.0.0", server_port=7860)
+demo.launch(
+    server_name="0.0.0.0",
+    server_port=7860
+)
 
 print("AFTER LAUNCH")

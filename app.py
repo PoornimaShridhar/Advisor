@@ -104,9 +104,11 @@
 
 import gradio as gr
 
-def greet():
-    return "Hello"
+def build_app():
+    with gr.Blocks() as demo:
+        gr.Markdown("Hello from HF Space")
+    return demo
 
-demo = gr.Interface(fn=greet, inputs=[], outputs="text")
+demo = build_app()
 
 demo.launch()

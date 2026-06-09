@@ -1,9 +1,7 @@
+# STEP 1: MUST BE THE FIRST MACHINE LEARNING IMPORT
+import spaces  
 import gradio as gr
 import pandas as pd
-# from dotenv import load_dotenv
-# load_dotenv()
-
-# becoz of deployment on hf space - above 2 lines replaced as below:
 import os
 
 from app.db.repo import init_db
@@ -13,24 +11,25 @@ from app.controller.session_loader import load_google_ads_data
 from app.ads1.ads_analyst import run_ads_analyst_card
 from app.ads1.budget_optimizer import run_budget_optimizer_card
 
-
 init_db()
 
 # HELPERS
 def on_campaign_select(campaign_name):
     dfs = load_google_ads_data()
-
     filtered = dfs.copy()
     filtered["campaigns"] = dfs["campaigns"][
         dfs["campaigns"]["name"] == campaign_name
     ]
     return filtered
 
+# STEP 2: DECORATE THE GPU-INTENSIVE FUNCTIONS
+@spaces.GPU()
 def run_ads_card(state):
     if not state:
         return "⚠️ Please select a campaign from the Dashboard first."
     return run_ads_analyst_card(state["dfs"])
 
+@spaces.GPU()
 def run_budget_card(state):
     if not state:
         return "⚠️ Please select a campaign from the Dashboard first."
@@ -40,7 +39,6 @@ def campaign_row_selected(evt: gr.SelectData):
     """
     Triggered when user clicks a row in the dashboard table
     """
-
     df = load_dashboard()[4]  # campaign table returned by load_dashboard()
     campaign_name = df.iloc[evt.index[0]]["Campaign"]
     dfs = on_campaign_select(campaign_name)
@@ -55,27 +53,20 @@ def campaign_row_selected(evt: gr.SelectData):
 
 # GRADIO APP
 with gr.Blocks(title="Ads Assistant") as demo:
-
     campaign_state = gr.State()
     gr.Markdown("# 🎯 Preschool Ads Dashboard")
 
     # TAB 1: DASHBOARD
-    # -------------------------
     with gr.Tab("Dashboard"):
-
         campaign_table = build_dashboard()
 
     # TAB 2: CAMPAIGN ANALYSIS
-    # -------------------------
     with gr.Tab("Campaign Analysis"):
-
         selected_campaign = gr.Markdown(
             "👈 Select a campaign from the Dashboard tab"
         )
-
         analyst_btn = gr.Button("Run Ads Analysis")
         budget_btn = gr.Button("Run Budget Optimization")
-
         output = gr.Markdown()
 
         analyst_btn.click(
@@ -91,7 +82,6 @@ with gr.Blocks(title="Ads Assistant") as demo:
         )
 
     # CONNECT TABLE CLICK → STATE
-    # -------------------------
     campaign_table.select(
         fn=campaign_row_selected,
         outputs=[
@@ -100,4 +90,6 @@ with gr.Blocks(title="Ads Assistant") as demo:
         ]
     )
 
-demo.launch(server_name="0.0.0.0", server_port=7860)
+# STEP 3: CLEAN LAUNCH FOR HUGGING FACE
+# Do not specify server_name or server_port; HF manages this automatically.
+demo.launch()

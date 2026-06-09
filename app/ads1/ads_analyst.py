@@ -129,16 +129,34 @@ Format:
 # 4. MAIN ORCHESTRATOR (THIS IS WHAT MAIN.PY CALLS)
 # -------------------------
 
+# def run_ads_analyst_card(dfs: dict) -> str:
+#     context = build_ads_analyst_context(dfs)
+#     prompt = build_ads_analyst_prompt(context)
+
+#     print("\n========== PROMPT ==========")
+#     print(prompt)
+
+#     result = generate_explanation(prompt)
+
+#     print("\n========== LLM OUTPUT ==========")
+#     print(result)
+
+#     return result
+
 def run_ads_analyst_card(dfs: dict) -> str:
+    print("\n🚀 [analyst_card] STARTED", flush=True)
+
     context = build_ads_analyst_context(dfs)
+    print("🧠 [analyst_card] context built", flush=True)
+
     prompt = build_ads_analyst_prompt(context)
+    print("✍️ [analyst_card] prompt built", flush=True)
 
     print("\n========== PROMPT ==========")
     print(prompt)
 
     result = generate_explanation(prompt)
 
-    print("\n========== LLM OUTPUT ==========")
-    print(result)
+    print("\n📤 [analyst_card] LLM result received", flush=True)
 
     return result

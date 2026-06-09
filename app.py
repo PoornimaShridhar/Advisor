@@ -11,7 +11,7 @@ from app.ads1.budget_optimizer import run_budget_optimizer_card
 import spaces
 print("🔥 STEP 1: imports done", flush=True)
 
-@spaces.GPU(duration=0)
+# @spaces.GPU(duration=0)
 def run_ads_card(state):
     print("\n🔥 [run_ads_card] ENTERED", flush=True)
     # if not state:

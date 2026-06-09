@@ -27,9 +27,11 @@ def run_budget_card(state):
 def startup():
     try:
         init_db()
-        print("✅ DB initialized successfully")
+        print("✅ DB initialized successfully", flush=True)
+        return "ok"
     except Exception as e:
-        print("⚠️ DB init failed:", e)
+        print("⚠️ DB failed:", e, flush=True)
+        return "error"
 
 print("🔥 STEP 2: DB init done", flush=True)
 
@@ -41,9 +43,15 @@ def initial_data_load():
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
     return dfs, formatted_df, spend, leads, cpl, count
 
-def campaign_row_selected(evt: gr.SelectData, df, full_state):
-    if df.empty or full_state is None:
-        return gr.State(), "⚠️ Data state is missing. Please click Refresh."
+# def campaign_row_selected(evt: gr.SelectData, df, full_state):
+#     if df.empty or full_state is None:
+#         return gr.State(), "⚠️ Data state is missing. Please click Refresh."
+#     row_index = evt.index[0]
+#     campaign_name = df.iloc[row_index]["Campaign"]
+#     campaign_state = on_campaign_select(full_state, campaign_name)
+#     return campaign_state, f"## 📊 Selected Campaign: {campaign_name}"
+
+def campaign_row_selected(df, full_state, evt: gr.SelectData):
     row_index = evt.index[0]
     campaign_name = df.iloc[row_index]["Campaign"]
     campaign_state = on_campaign_select(full_state, campaign_name)
@@ -55,7 +63,7 @@ with gr.Blocks() as demo:
     # Initialize components empty; populated safely via demo.load
     full_state = gr.State()
     campaign_state = gr.State()
-    df_state = gr.State()
+    # df_state = gr.State()
 
     gr.Markdown("# 🎯 Ads Dashboard")
 
@@ -81,17 +89,15 @@ with gr.Blocks() as demo:
 
     # Core Event Bindings
     # campaign_table.change(fn=lambda x: x, inputs=[campaign_table], outputs=df_state)
-    def campaign_row_selected(evt: gr.SelectData, df, full_state):
-        row_index = evt.index[0]
-        campaign_name = df.iloc[row_index]["Campaign"]
-    
-        campaign_state = on_campaign_select(full_state, campaign_name)
-    
-        return campaign_state, f"## 📊 Selected Campaign: {campaign_name}"
-    
+    # campaign_table.select(
+    #     fn=campaign_row_selected,
+    #     inputs=[df_state, full_state],
+    #     outputs=[campaign_state, selected]
+    # )
+
     campaign_table.select(
         fn=campaign_row_selected,
-        inputs=[df_state, full_state],
+        inputs=[campaign_table, full_state],
         outputs=[campaign_state, selected]
     )
 
@@ -106,8 +112,7 @@ with gr.Blocks() as demo:
         fn=initial_data_load,
         outputs=[full_state, campaign_table, total_spend, total_leads, average_cpl, active_campaigns]
     )
-
-    demo.load(fn=startup)
+    demo.load(fn=startup, outputs=[])
 
 if __name__ == "__main__":
     demo.launch()

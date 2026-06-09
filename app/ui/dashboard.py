@@ -2,24 +2,17 @@ import gradio as gr
 import pandas as pd
 from app.controller.session_loader import load_google_ads_data
 
-# DATA LOADER
-# -------------------------
-def load_dashboard():
+
+def get_dashboard_data():
     dfs = load_google_ads_data()
     df = dfs["campaigns"].copy()
 
     if df.empty:
-        return (
-            0, 0, 0, 0,
-            pd.DataFrame(columns=[
-                "Campaign", "Spend", "Leads", "CPL", "CTR"
-            ])
-        )
+        return 0, 0, 0, 0, pd.DataFrame(columns=["Campaign", "Spend", "Leads", "CPL", "CTR"])
 
-    # derive missing fields safely
-    df["leads"] = df["conversions"] if "conversions" in df.columns else 0
+    df["leads"] = df.get("conversions", 0)
     df["cpl"] = df["cost"] / df["leads"].replace(0, 1)
-    df["ctr"] = df["ctr"]
+    df["ctr"] = df.get("ctr", 0)
 
     formatted = pd.DataFrame({
         "Campaign": df["name"],
@@ -37,33 +30,11 @@ def load_dashboard():
         formatted
     )
 
-# UI BUILDER
-# -------------------------
+
 def build_dashboard():
-    gr.Markdown("## Campaign Dashboard")
-
-    with gr.Row():
-        total_spend = gr.Number(label="Total Spend")
-        total_leads = gr.Number(label="Total Leads")
-        average_cpl = gr.Number(label="Average CPL")
-        active_campaigns = gr.Number(label="Active Campaigns")
-
+    # Retained exactly for backend structural lookups if referenced elsewhere
     campaign_table = gr.Dataframe(
         label="Campaign Performance",
-        interactive=True   # IMPORTANT: needed for row click
+        interactive=True
     )
-
-    refresh_btn = gr.Button("Refresh Dashboard")
-    refresh_btn.click(
-        fn=load_dashboard,
-        outputs=[
-            total_spend,
-            total_leads,
-            average_cpl,
-            active_campaigns,
-            campaign_table,
-        ],
-    )
-
-    # ✅ IMPORTANT FIX: return table so main.py can attach .select()
     return campaign_table

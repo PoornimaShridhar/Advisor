@@ -13,10 +13,9 @@ print("🔥 STEP 1: imports done", flush=True)
 
 @spaces.GPU(duration=0)
 def run_ads_card(state):
-    return "BUTTON HIT"
-    # if not state:
-    #     return "⚠️ Select a campaign from the Dashboard tab first."
-    # return run_ads_analyst_card(state["full_dfs"])
+    if not state:
+        return "⚠️ Select a campaign from the Dashboard tab first."
+    return run_ads_analyst_card(state["full_dfs"])
 
 @spaces.GPU(duration=0)
 def run_budget_card(state):

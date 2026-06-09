@@ -1,5 +1,7 @@
 import gradio as gr
 import os
+print("APP STARTED", flush=True)
+
 from app.db.repo import init_db
 from app.ui.dashboard import build_dashboard, get_dashboard_data
 from app.controller.campaign_controller import on_campaign_select
@@ -7,7 +9,7 @@ from app.controller.session_loader import load_google_ads_data
 from app.ads1.ads_analyst import run_ads_analyst_card
 from app.ads1.budget_optimizer import run_budget_optimizer_card
 import spaces
-
+print("🔥 STEP 1: imports done", flush=True)
 
 @spaces.GPU(duration=0)
 def run_ads_card(state):
@@ -31,6 +33,8 @@ def startup():
 
 startup()
 
+print("🔥 STEP 2: DB init done", flush=True)
+
 # UI Optimization: Fetch data AFTER UI elements are drawn
 def initial_data_load():
     print("🔄 App loaded. Population of background states initiated...")
@@ -46,6 +50,8 @@ def campaign_row_selected(evt: gr.SelectData, df, full_state):
     campaign_name = df.iloc[row_index]["Campaign"]
     campaign_state = on_campaign_select(full_state, campaign_name)
     return campaign_state, f"## 📊 Selected Campaign: {campaign_name}"
+
+print("🔥 STEP 3: building UI", flush=True)
 
 with gr.Blocks() as demo:
     # Initialize components empty; populated safely via demo.load

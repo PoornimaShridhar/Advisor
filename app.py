@@ -11,9 +11,18 @@ import spaces
 
 @spaces.GPU(duration=0)
 def run_ads_card(state):
-    if not state:
-        return "⚠️ Select a campaign from the Dashboard tab first."
+    print("🔥 BUTTON HIT", flush=True)
+    print("STATE:", state, flush=True)
+
+    if state is None:
+        return "❌ No state received"
+
     return run_ads_analyst_card(state["full_dfs"])
+
+# def run_ads_card(state):
+#     if not state:
+#         return "⚠️ Select a campaign from the Dashboard tab first."
+#     return run_ads_analyst_card(state["full_dfs"])
 
 @spaces.GPU(duration=0)
 def run_budget_card(state):
@@ -75,11 +84,23 @@ with gr.Blocks() as demo:
             gr.Button("💰 Run Budget Optimization").click(run_budget_card, campaign_state, output)
 
     # Core Event Bindings
-    campaign_table.change(fn=lambda x: x, inputs=[campaign_table], outputs=df_state)
+    # campaign_table.change(fn=lambda x: x, inputs=[campaign_table], outputs=df_state)
+    def campaign_row_selected(evt: gr.SelectData, df, full_state):
+        row_index = evt.index[0]
+        campaign_name = df.iloc[row_index]["Campaign"]
     
+        campaign_state = on_campaign_select(full_state, campaign_name)
+    
+        return campaign_state, f"## 📊 Selected Campaign: {campaign_name}"
+    
+    # campaign_table.select(
+    #     fn=campaign_row_selected,
+    #     inputs=[df_state, full_state],
+    #     outputs=[campaign_state, selected]
+    # )
     campaign_table.select(
         fn=campaign_row_selected,
-        inputs=[df_state, full_state],
+        inputs=[campaign_table, full_state],
         outputs=[campaign_state, selected]
     )
 

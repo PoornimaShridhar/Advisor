@@ -31,8 +31,6 @@ def startup():
     except Exception as e:
         print("⚠️ DB init failed:", e)
 
-demo.load(fn=lambda: startup())
-
 print("🔥 STEP 2: DB init done", flush=True)
 
 # UI Optimization: Fetch data AFTER UI elements are drawn
@@ -108,6 +106,8 @@ with gr.Blocks() as demo:
         fn=initial_data_load,
         outputs=[full_state, campaign_table, total_spend, total_leads, average_cpl, active_campaigns]
     )
+
+    demo.load(fn=startup)
 
 if __name__ == "__main__":
     demo.launch()

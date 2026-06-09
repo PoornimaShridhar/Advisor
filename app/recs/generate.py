@@ -18,27 +18,63 @@ def sanitize_explanation(text: str, rec: Dict = None) -> str:
     return cleaned
 
 def generate_explanation(prompt: str, rec: Dict = None, stream: bool = False):
-    print("🔥 LLM CALLED")
+    print("\n🔥 [generate_explanation] CALLED", flush=True)
 
     llm = load_model()
+    print("🧠 [generate_explanation] model loaded", flush=True)
 
     try:
+        print("🚀 [generate_explanation] calling LLM...", flush=True)
 
         response = llm.create_chat_completion(
-        messages=[
-            {"role": "system", "content": "You are an expert marketing analyst for Google Ads.You MUST NOT output reasoning, thinking, or tags like <think>.You MUST ONLY output final answer."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.7,)
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an expert marketing analyst. Output only final answer."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+        )
+
+        print("📡 [generate_explanation] response received", flush=True)
+
         raw = response["choices"][0]["message"]["content"]
 
-        clean = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL)
-        clean = re.sub(r"(?s).*?Reasoning:.*?\n", "", clean)
-        clean = re.sub(r"(?s).*?Step \d+.*?\n", "", clean)
+        print("📄 [generate_explanation] raw output length:", len(raw), flush=True)
 
-        print(clean)
+        clean = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL)
+
+        print("✨ [generate_explanation] cleaned output ready", flush=True)
+
         return clean
 
     except Exception as e:
-        print("❌ LLM ERROR:", e)
+        print("❌ [generate_explanation] ERROR:", e, flush=True)
         return fallback_explanation(rec)
+    
+# def generate_explanation(prompt: str, rec: Dict = None, stream: bool = False):
+#     print("🔥 LLM CALLED")
+
+#     llm = load_model()
+
+#     try:
+
+#         response = llm.create_chat_completion(
+#         messages=[
+#             {"role": "system", "content": "You are an expert marketing analyst for Google Ads.You MUST NOT output reasoning, thinking, or tags like <think>.You MUST ONLY output final answer."},
+#             {"role": "user", "content": prompt}
+#         ],
+#         temperature=0.7,)
+#         raw = response["choices"][0]["message"]["content"]
+
+#         clean = re.sub(r"<think>.*?</think>", "", raw, flags=re.DOTALL)
+#         clean = re.sub(r"(?s).*?Reasoning:.*?\n", "", clean)
+#         clean = re.sub(r"(?s).*?Step \d+.*?\n", "", clean)
+
+#         print(clean)
+#         return clean
+
+#     except Exception as e:
+#         print("❌ LLM ERROR:", e)
+#         return fallback_explanation(rec)

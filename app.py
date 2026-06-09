@@ -11,22 +11,22 @@ from app.ads1.budget_optimizer import run_budget_optimizer_card
 import spaces
 print("🔥 STEP 1: imports done", flush=True)
 
-# @spaces.GPU(duration=0)
-# def run_ads_card(state):
-#     print("\n🔥 [run_ads_card] ENTERED", flush=True)
-#     if not state:
-#         print("❌ [run_ads_card] state is EMPTY", flush=True)
-#         return "⚠️ Select a campaign first"
-#     print("📦 [run_ads_card] state received", flush=True)
-#     dfs = state.get("full_dfs")
-#     print("📊 [run_ads_card] extracted dfs:", type(dfs), flush=True)
-#     result = run_ads_analyst_card(dfs)
-#     print("✅ [run_ads_card] returning result", flush=True)
-#     return result
-
+@spaces.GPU(duration=0)
 def run_ads_card(state):
-    print("🔥 FUNCTION CALLED", flush=True)
-    return "test"
+    print("\n🔥 [run_ads_card] ENTERED", flush=True)
+    # if not state:
+    #     print("❌ [run_ads_card] state is EMPTY", flush=True)
+    #     return "⚠️ Select a campaign first"
+    # print("📦 [run_ads_card] state received", flush=True)
+    # dfs = state.get("full_dfs")
+    # print("📊 [run_ads_card] extracted dfs:", type(dfs), flush=True)
+    # result = run_ads_analyst_card(dfs)
+    # print("✅ [run_ads_card] returning result", flush=True)
+    return "success"
+
+# def run_ads_card(state):
+#     print("🔥 FUNCTION CALLED", flush=True)
+#     return "test"
     
 # def run_ads_card(state):
 #     if not state:

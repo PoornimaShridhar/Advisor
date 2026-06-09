@@ -16,9 +16,7 @@ def load_model():
 
     _model = Llama(
         model_path=model_path,
-        n_ctx=4096,
-        n_threads=2,        # Match this EXACTLY to the 2 vCPUs provided by free Spaces
-        n_threads_batch=2,  
+        n_gpu_layers=-1,
         verbose=False,
     )
 

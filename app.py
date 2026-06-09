@@ -11,18 +11,10 @@ import spaces
 
 @spaces.GPU(duration=0)
 def run_ads_card(state):
-    print("🔥 BUTTON HIT", flush=True)
-    print("STATE:", state, flush=True)
-
-    if state is None:
-        return "❌ No state received"
-
-    return run_ads_analyst_card(state["full_dfs"])
-
-# def run_ads_card(state):
-#     if not state:
-#         return "⚠️ Select a campaign from the Dashboard tab first."
-#     return run_ads_analyst_card(state["full_dfs"])
+    return "BUTTON HIT"
+    # if not state:
+    #     return "⚠️ Select a campaign from the Dashboard tab first."
+    # return run_ads_analyst_card(state["full_dfs"])
 
 @spaces.GPU(duration=0)
 def run_budget_card(state):
@@ -93,14 +85,9 @@ with gr.Blocks() as demo:
     
         return campaign_state, f"## 📊 Selected Campaign: {campaign_name}"
     
-    # campaign_table.select(
-    #     fn=campaign_row_selected,
-    #     inputs=[df_state, full_state],
-    #     outputs=[campaign_state, selected]
-    # )
     campaign_table.select(
         fn=campaign_row_selected,
-        inputs=[campaign_table, full_state],
+        inputs=[df_state, full_state],
         outputs=[campaign_state, selected]
     )
 

@@ -1,95 +1,95 @@
-# STEP 1: MUST BE THE FIRST MACHINE LEARNING IMPORT
-import spaces  
 import gradio as gr
-import pandas as pd
 import os
-
 from app.db.repo import init_db
-from app.ui.dashboard import load_dashboard, build_dashboard
+from app.ui.dashboard import build_dashboard, get_dashboard_data
+from app.controller.campaign_controller import on_campaign_select
 from app.controller.session_loader import load_google_ads_data
-
 from app.ads1.ads_analyst import run_ads_analyst_card
 from app.ads1.budget_optimizer import run_budget_optimizer_card
 
-init_db()
+def startup():
+    try:
+        init_db()
+        print("✅ DB initialized successfully")
+    except Exception as e:
+        print("⚠️ DB init failed:", e)
 
-# HELPERS
-def on_campaign_select(campaign_name):
+startup()
+
+# UI Optimization: Fetch data AFTER UI elements are drawn
+def initial_data_load():
+    print("🔄 App loaded. Population of background states initiated...")
     dfs = load_google_ads_data()
-    filtered = dfs.copy()
-    filtered["campaigns"] = dfs["campaigns"][
-        dfs["campaigns"]["name"] == campaign_name
-    ]
-    return filtered
+    # Unpack dashboard metrics to fill the UI immediately
+    spend, leads, cpl, count, formatted_df = get_dashboard_data()
+    return dfs, formatted_df, spend, leads, cpl, count
 
-# STEP 2: DECORATE THE GPU-INTENSIVE FUNCTIONS
-@spaces.GPU()
 def run_ads_card(state):
     if not state:
-        return "⚠️ Please select a campaign from the Dashboard first."
-    return run_ads_analyst_card(state["dfs"])
+        return "⚠️ Select a campaign from the Dashboard tab first."
+    return run_ads_analyst_card(state["full_dfs"])
 
-@spaces.GPU()
 def run_budget_card(state):
     if not state:
-        return "⚠️ Please select a campaign from the Dashboard first."
-    return run_budget_optimizer_card(state["dfs"])
+        return "⚠️ Select a campaign from the Dashboard tab first."
+    return run_budget_optimizer_card(state["full_dfs"])
 
-def campaign_row_selected(evt: gr.SelectData):
-    """
-    Triggered when user clicks a row in the dashboard table
-    """
-    df = load_dashboard()[4]  # campaign table returned by load_dashboard()
-    campaign_name = df.iloc[evt.index[0]]["Campaign"]
-    dfs = on_campaign_select(campaign_name)
+def campaign_row_selected(evt: gr.SelectData, df, full_state):
+    if df.empty or full_state is None:
+        return gr.State(), "⚠️ Data state is missing. Please click Refresh."
+    row_index = evt.index[0]
+    campaign_name = df.iloc[row_index]["Campaign"]
+    campaign_state = on_campaign_select(full_state, campaign_name)
+    return campaign_state, f"## 📊 Selected Campaign: {campaign_name}"
 
-    return (
-        {
-            "campaign_name": campaign_name,
-            "dfs": dfs
-        },
-        f"## 📊 Selected Campaign: {campaign_name}"
-    )
-
-# GRADIO APP
-with gr.Blocks(title="Ads Assistant") as demo:
+with gr.Blocks() as demo:
+    # Initialize components empty; populated safely via demo.load
+    full_state = gr.State()
     campaign_state = gr.State()
-    gr.Markdown("# 🎯 Preschool Ads Dashboard")
+    df_state = gr.State()
 
-    # TAB 1: DASHBOARD
+    gr.Markdown("# 🎯 Ads Dashboard")
+
     with gr.Tab("Dashboard"):
-        campaign_table = build_dashboard()
+        # We modify build_dashboard to expose metric components for automated hydration
+        gr.Markdown("## 📊 Campaign Dashboard")
+        with gr.Row():
+            total_spend = gr.Number(label="Total Spend")
+            total_leads = gr.Number(label="Total Leads")
+            average_cpl = gr.Number(label="Average CPL")
+            active_campaigns = gr.Number(label="Active Campaigns")
 
-    # TAB 2: CAMPAIGN ANALYSIS
-    with gr.Tab("Campaign Analysis"):
-        selected_campaign = gr.Markdown(
-            "👈 Select a campaign from the Dashboard tab"
-        )
-        analyst_btn = gr.Button("Run Ads Analysis")
-        budget_btn = gr.Button("Run Budget Optimization")
+        campaign_table = gr.Dataframe(label="Campaign Performance", interactive=True)
+        refresh_btn = gr.Button("🔄 Force Refresh Data")
+
+    with gr.Tab("Analysis"):
+        selected = gr.Markdown("👈 Select a campaign from the Dashboard tab")
         output = gr.Markdown()
+        
+        with gr.Row():
+            gr.Button("🚀 Run Ads Analysis").click(run_ads_card, campaign_state, output)
+            gr.Button("💰 Run Budget Optimization").click(run_budget_card, campaign_state, output)
 
-        analyst_btn.click(
-            fn=run_ads_card,
-            inputs=campaign_state,
-            outputs=output
-        )
-
-        budget_btn.click(
-            fn=run_budget_card,
-            inputs=campaign_state,
-            outputs=output
-        )
-
-    # CONNECT TABLE CLICK → STATE
+    # Core Event Bindings
+    campaign_table.change(fn=lambda x: x, inputs=[campaign_table], outputs=df_state)
+    
     campaign_table.select(
         fn=campaign_row_selected,
-        outputs=[
-            campaign_state,
-            selected_campaign
-        ]
+        inputs=[df_state, full_state],
+        outputs=[campaign_state, selected]
     )
 
-# STEP 3: CLEAN LAUNCH FOR HUGGING FACE
-# Do not specify server_name or server_port; HF manages this automatically.
-demo.launch()
+    # Button manual refresh
+    refresh_btn.click(
+        fn=initial_data_load,
+        outputs=[full_state, campaign_table, total_spend, total_leads, average_cpl, active_campaigns]
+    )
+
+    # ⚡ MAGIC FIX: App automatically loads data into UI components instantly on launch
+    demo.load(
+        fn=initial_data_load,
+        outputs=[full_state, campaign_table, total_spend, total_leads, average_cpl, active_campaigns]
+    )
+
+if __name__ == "__main__":
+    demo.launch(server_name="0.0.0.0", server_port=int(os.environ.get("PORT", 7860)))

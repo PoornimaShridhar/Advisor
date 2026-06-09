@@ -6,12 +6,16 @@ from app.controller.campaign_controller import on_campaign_select
 from app.controller.session_loader import load_google_ads_data
 from app.ads1.ads_analyst import run_ads_analyst_card
 from app.ads1.budget_optimizer import run_budget_optimizer_card
+import spaces
 
+
+@spaces.GPU(duration=0)
 def run_ads_card(state):
     if not state:
         return "⚠️ Select a campaign from the Dashboard tab first."
     return run_ads_analyst_card(state["full_dfs"])
 
+@spaces.GPU(duration=0)
 def run_budget_card(state):
     if not state:
         return "⚠️ Select a campaign from the Dashboard tab first."

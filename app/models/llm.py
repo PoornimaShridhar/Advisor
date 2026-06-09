@@ -4,6 +4,7 @@ from llama_cpp import Llama
 _model = None
 
 def load_model():
+    print("🧠 [load_model] called", flush=True)
     global _model
 
     if _model is not None:

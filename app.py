@@ -7,6 +7,21 @@ from app.controller.session_loader import load_google_ads_data
 from app.ads1.ads_analyst import run_ads_analyst_card
 from app.ads1.budget_optimizer import run_budget_optimizer_card
 
+import spaces
+
+@spaces.GPU
+def run_ads_card(state):
+    if not state:
+        return "⚠️ Select a campaign from the Dashboard tab first."
+    return run_ads_analyst_card(state["full_dfs"])
+
+
+@spaces.GPU
+def run_budget_card(state):
+    if not state:
+        return "⚠️ Select a campaign from the Dashboard tab first."
+    return run_budget_optimizer_card(state["full_dfs"])
+
 def startup():
     try:
         init_db()
@@ -23,16 +38,6 @@ def initial_data_load():
     # Unpack dashboard metrics to fill the UI immediately
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
     return dfs, formatted_df, spend, leads, cpl, count
-
-def run_ads_card(state):
-    if not state:
-        return "⚠️ Select a campaign from the Dashboard tab first."
-    return run_ads_analyst_card(state["full_dfs"])
-
-def run_budget_card(state):
-    if not state:
-        return "⚠️ Select a campaign from the Dashboard tab first."
-    return run_budget_optimizer_card(state["full_dfs"])
 
 def campaign_row_selected(evt: gr.SelectData, df, full_state):
     if df.empty or full_state is None:
@@ -92,4 +97,4 @@ with gr.Blocks() as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=int(os.environ.get("PORT", 7860)))
+    demo.launch()

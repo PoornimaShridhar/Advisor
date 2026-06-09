@@ -16,6 +16,7 @@ def load_model():
 
     _model = Llama(
         model_path=model_path,
+        n_ctx=4096,
         n_gpu_layers=-1,
         verbose=False,
     )

@@ -1,3 +1,10 @@
+--extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
+--only-binary llama-cpp-python
+
+nvidia-cublas-cu12
+nvidia-cuda-runtime-cu12
+llama-cpp-python==0.3.23
+
 gradio>=5.0.0
 spaces>=0.43.0
 sqlalchemy
@@ -6,8 +13,3 @@ pandas
 python-dotenv
 requests
 huggingface_hub>=0.24.0
-pytest
-# --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
-llama-cpp-python==0.3.23 --prefer-binary
-# nvidia-cuda-runtime-cu12
-# nvidia-cublas-cu12

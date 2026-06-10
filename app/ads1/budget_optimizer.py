@@ -131,4 +131,4 @@ def run_budget_optimizer_card(dfs):
         "reason": prompt,
     }
 
-    return generate_explanation(rec)
+    return generate_explanation(prompt, rec=rec)

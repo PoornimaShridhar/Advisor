@@ -18,7 +18,6 @@ def sanitize_explanation(text: str, rec: Dict = None) -> str:
 
     return cleaned
 
-@spaces.GPU(duration=0)
 def generate_explanation(prompt: str, rec: Dict = None, stream: bool = False):
     print("\n🔥 [generate_explanation] CALLED", flush=True)
 

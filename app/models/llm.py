@@ -44,10 +44,7 @@ def load_model() -> Llama:
             return _model
 
         print("⬇️ [load_model] downloading model...", flush=True)
-        model_path = hf_hub_download(
-            repo_id=HF_REPO,
-            filename=HF_FILENAME,
-        )
+        model_path = hf_hub_download(repo_id=HF_REPO, filename=HF_FILENAME)
         print(f"✅ [load_model] model downloaded at {model_path}", flush=True)
 
         _preload_cuda_libs()

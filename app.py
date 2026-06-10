@@ -24,12 +24,13 @@ def run_ads_card(state):
 
         print("📦 [run_ads_card] state received", type(state), flush=True)
         dfs = state.get("full_dfs")
+        campaign_name = state.get("campaign_name")
         print("📊 [run_ads_card] extracted dfs:", type(dfs), flush=True)
 
         if not dfs:
             return "⚠️ No campaign data — select a campaign on the Dashboard tab first."
 
-        result = run_ads_analyst_card(dfs)
+        result = run_ads_analyst_card(dfs, campaign_name=campaign_name)
         print("✅ [run_ads_card] returning result", flush=True)
         return result
     except Exception as e:
@@ -46,10 +47,11 @@ def run_budget_card(state):
             return "⚠️ Select a campaign first"
 
         dfs = state.get("full_dfs")
+        campaign_name = state.get("campaign_name")
         if not dfs:
             return "⚠️ No campaign data — select a campaign on the Dashboard tab first."
 
-        result = run_budget_optimizer_card(dfs)
+        result = run_budget_optimizer_card(dfs, campaign_name=campaign_name)
         print("✅ [run_budget_card] returning result", flush=True)
         return result
     except Exception as e:
@@ -61,10 +63,8 @@ def startup():
     try:
         init_db()
         print("✅ DB initialized successfully", flush=True)
-        return "ok"
     except Exception as e:
         print("⚠️ DB failed:", e, flush=True)
-        return "error"
 
 
 print("🔥 STEP 2: DB init done", flush=True)
@@ -132,7 +132,7 @@ with gr.Blocks() as demo:
         fn=initial_data_load,
         outputs=[full_state, campaign_table, total_spend, total_leads, average_cpl, active_campaigns],
     )
-    demo.load(fn=startup, outputs=[])
+    demo.load(fn=startup)
 
 demo.queue()
 

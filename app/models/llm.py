@@ -20,14 +20,14 @@ def load_model():
 
     print(f"✅ [load_model] model downloaded at {model_path}", flush=True)
 
-    gpu_layers = int(os.getenv("LLAMA_GPU_LAYERS", "-1"))
+    gpu_layers = int(os.getenv("LLAMA_GPU_LAYERS", "0"))
     print(f"🚀 [load_model] initializing Llama with n_gpu_layers={gpu_layers}", flush=True)
 
     _model = Llama(
         model_path=model_path,
         n_ctx=4096,
         n_gpu_layers=gpu_layers,
-        verbose=False,
+        verbose=True,
     )
 
     print("✅ [load_model] model initialized", flush=True)

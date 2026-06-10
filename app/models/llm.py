@@ -2,18 +2,19 @@ from __future__ import annotations
 
 import os
 import threading
+from typing import Any
 
 from huggingface_hub import hf_hub_download
-from llama_cpp import Llama
 
 HF_REPO = os.getenv("LLAMA_HF_REPO", "openbmb/MiniCPM5-1B-GGUF")
 HF_FILENAME = os.getenv("LLAMA_HF_FILENAME", "MiniCPM5-1B-Q4_K_M.gguf")
 
-_model: Llama | None = None
+_model: Any = None
 _init_lock = threading.Lock()
 
 
 def _preload_cuda_libs() -> None:
+    """Expose pip-installed CUDA runtime to llama.cpp on ZeroGPU (no system libcudart)."""
     try:
         import ctypes
 
@@ -22,16 +23,24 @@ def _preload_cuda_libs() -> None:
     except ImportError:
         return
 
+    lib_dirs: list[str] = []
     for module, lib_name in (
         (nvidia.cublas, "libcublas.so.12"),
         (nvidia.cuda_runtime, "libcudart.so.12"),
     ):
-        lib_path = os.path.join(module.__path__[0], "lib", lib_name)
+        lib_dir = os.path.join(module.__path__[0], "lib")
+        lib_path = os.path.join(lib_dir, lib_name)
         if os.path.isfile(lib_path):
             ctypes.CDLL(lib_path, mode=ctypes.RTLD_GLOBAL)
+            lib_dirs.append(lib_dir)
+
+    if lib_dirs:
+        existing = os.environ.get("LD_LIBRARY_PATH", "")
+        merged = lib_dirs + ([existing] if existing else [])
+        os.environ["LD_LIBRARY_PATH"] = ":".join(merged)
 
 
-def load_model() -> Llama:
+def load_model() -> Any:
     global _model
     print("🧠 [load_model] called", flush=True)
 
@@ -48,6 +57,8 @@ def load_model() -> Llama:
         print(f"✅ [load_model] model downloaded at {model_path}", flush=True)
 
         _preload_cuda_libs()
+        from llama_cpp import Llama
+
         gpu_layers = int(os.getenv("LLAMA_GPU_LAYERS", "-1"))
         n_ctx = int(os.getenv("LLAMA_N_CTX", "2048"))
         n_threads = int(os.getenv("LLAMA_N_THREADS", "4"))

@@ -9,6 +9,7 @@ TARGET_CPL = 20.0
 # 1. DATA BUILDERS
 # -------------------------
 
+
 def build_campaign_snapshot(dfs: dict) -> dict:
     df = dfs["campaigns"]
 
@@ -86,6 +87,7 @@ def build_signals(dfs: dict) -> dict:
 # 2. CONTEXT BUILDER
 # -------------------------
 
+
 def build_ads_analyst_context(dfs: dict) -> dict:
     return {
         "campaign": build_campaign_snapshot(dfs),
@@ -98,6 +100,7 @@ def build_ads_analyst_context(dfs: dict) -> dict:
 # -------------------------
 # 3. PROMPT BUILDER
 # -------------------------
+
 
 def build_ads_analyst_prompt(context: dict) -> str:
     return f"""
@@ -125,26 +128,11 @@ Format:
 """
 
 
-# -------------------------
-# 4. MAIN ORCHESTRATOR (THIS IS WHAT MAIN.PY CALLS)
-# -------------------------
-
-# def run_ads_analyst_card(dfs: dict) -> str:
-#     context = build_ads_analyst_context(dfs)
-#     prompt = build_ads_analyst_prompt(context)
-
-#     print("\n========== PROMPT ==========")
-#     print(prompt)
-
-#     result = generate_explanation(prompt)
-
-#     print("\n========== LLM OUTPUT ==========")
-#     print(result)
-
-#     return result
-
 def run_ads_analyst_card(dfs: dict) -> str:
     print("\n🚀 [analyst_card] STARTED", flush=True)
+
+    if not dfs:
+        return "⚠️ No campaign data — select a campaign on the Dashboard tab first."
 
     context = build_ads_analyst_context(dfs)
     print("🧠 [analyst_card] context built", flush=True)
@@ -152,11 +140,7 @@ def run_ads_analyst_card(dfs: dict) -> str:
     prompt = build_ads_analyst_prompt(context)
     print("✍️ [analyst_card] prompt built", flush=True)
 
-    print("\n========== PROMPT ==========")
-    print(prompt)
-
     result = generate_explanation(prompt)
-
     print("\n📤 [analyst_card] LLM result received", flush=True)
 
     return result

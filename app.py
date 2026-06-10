@@ -1,5 +1,6 @@
 import gradio as gr
 import os
+
 print("APP STARTED", flush=True)
 
 from app.db.repo import init_db
@@ -9,9 +10,11 @@ from app.controller.session_loader import load_google_ads_data
 from app.ads1.ads_analyst import run_ads_analyst_card
 from app.ads1.budget_optimizer import run_budget_optimizer_card
 import spaces
+
 print("🔥 STEP 1: imports done", flush=True)
 
-# @spaces.GPU(duration=0)
+
+@spaces.GPU(duration=120)
 def run_ads_card(state):
     print("\n🔥 [run_ads_card] ENTERED", flush=True)
     try:
@@ -23,6 +26,9 @@ def run_ads_card(state):
         dfs = state.get("full_dfs")
         print("📊 [run_ads_card] extracted dfs:", type(dfs), flush=True)
 
+        if not dfs:
+            return "⚠️ No campaign data — select a campaign on the Dashboard tab first."
+
         result = run_ads_analyst_card(dfs)
         print("✅ [run_ads_card] returning result", flush=True)
         return result
@@ -30,19 +36,26 @@ def run_ads_card(state):
         print("❌ [run_ads_card] ERROR:", repr(e), flush=True)
         return f"⚠️ Analysis failed: {e}"
 
-# def run_ads_card(state):
-#     print("🔥 FUNCTION CALLED", flush=True)
-#     return "test"
-    
-# def run_ads_card(state):
-#     if not state:
-#         return "⚠️ Select a campaign from the Dashboard tab first."
-#     return run_ads_analyst_card(state["full_dfs"])
 
+@spaces.GPU(duration=120)
 def run_budget_card(state):
-    if not state:
-        return "⚠️ Select a campaign from the Dashboard tab first."
-    return run_budget_optimizer_card(state["full_dfs"])
+    print("\n🔥 [run_budget_card] ENTERED", flush=True)
+    try:
+        if not state:
+            print("❌ [run_budget_card] state is EMPTY", flush=True)
+            return "⚠️ Select a campaign first"
+
+        dfs = state.get("full_dfs")
+        if not dfs:
+            return "⚠️ No campaign data — select a campaign on the Dashboard tab first."
+
+        result = run_budget_optimizer_card(dfs)
+        print("✅ [run_budget_card] returning result", flush=True)
+        return result
+    except Exception as e:
+        print("❌ [run_budget_card] ERROR:", repr(e), flush=True)
+        return f"⚠️ Budget optimization failed: {e}"
+
 
 def startup():
     try:
@@ -52,6 +65,7 @@ def startup():
     except Exception as e:
         print("⚠️ DB failed:", e, flush=True)
         return "error"
+
 
 print("🔥 STEP 2: DB init done", flush=True)
 
@@ -63,19 +77,13 @@ def initial_data_load():
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
     return dfs, formatted_df, spend, leads, cpl, count
 
-# def campaign_row_selected(evt: gr.SelectData, df, full_state):
-#     if df.empty or full_state is None:
-#         return gr.State(), "⚠️ Data state is missing. Please click Refresh."
-#     row_index = evt.index[0]
-#     campaign_name = df.iloc[row_index]["Campaign"]
-#     campaign_state = on_campaign_select(full_state, campaign_name)
-#     return campaign_state, f"## 📊 Selected Campaign: {campaign_name}"
 
 def campaign_row_selected(df, full_state, evt: gr.SelectData):
     row_index = evt.index[0]
     campaign_name = df.iloc[row_index]["Campaign"]
     campaign_state = on_campaign_select(full_state, campaign_name)
     return campaign_state, f"## 📊 Selected Campaign: {campaign_name}"
+
 
 print("🔥 STEP 3: building UI", flush=True)
 
@@ -102,38 +110,31 @@ with gr.Blocks() as demo:
     with gr.Tab("Analysis"):
         selected = gr.Markdown("👈 Select a campaign from the Dashboard tab")
         output = gr.Markdown()
-        
+
         with gr.Row():
             gr.Button("🚀 Run Ads Analysis").click(run_ads_card, campaign_state, output)
             gr.Button("💰 Run Budget Optimization").click(run_budget_card, campaign_state, output)
 
-    # Core Event Bindings
-    # campaign_table.change(fn=lambda x: x, inputs=[campaign_table], outputs=df_state)
-    # campaign_table.select(
-    #     fn=campaign_row_selected,
-    #     inputs=[df_state, full_state],
-    #     outputs=[campaign_state, selected]
-    # )
-
     campaign_table.select(
         fn=campaign_row_selected,
         inputs=[campaign_table, full_state],
-        outputs=[campaign_state, selected]
+        outputs=[campaign_state, selected],
     )
 
     # Button manual refresh
     refresh_btn.click(
         fn=initial_data_load,
-        outputs=[full_state, campaign_table, total_spend, total_leads, average_cpl, active_campaigns]
+        outputs=[full_state, campaign_table, total_spend, total_leads, average_cpl, active_campaigns],
     )
 
     # ⚡ MAGIC FIX: App automatically loads data into UI components instantly on launch
     demo.load(
         fn=initial_data_load,
-        outputs=[full_state, campaign_table, total_spend, total_leads, average_cpl, active_campaigns]
+        outputs=[full_state, campaign_table, total_spend, total_leads, average_cpl, active_campaigns],
     )
     demo.load(fn=startup, outputs=[])
 
 demo.queue()
+
 if __name__ == "__main__":
     demo.launch()

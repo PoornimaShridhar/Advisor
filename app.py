@@ -79,6 +79,24 @@ CSS = """
     margin-top: 12px;
 }
 
+/* REAL INTERACTIVE CARD */
+.ai-button {
+    all: unset;
+    display: block;
+    background: #ffffff;
+    border: 1px solid #e6e5e0;
+    border-radius: 12px;
+    padding: 14px;
+    min-height: 90px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.ai-button:hover {
+    border-color: #d6d3cc;
+    transform: translateY(-1px);
+}
+
 .ai-card {
     background: #ffffff;
     border: 1px solid #e6e5e0;
@@ -217,7 +235,7 @@ with gr.Blocks(css=CSS) as demo:
                 interactive=True
             )
 
-        # RIGHT WORKSPACE (FIXED: NO EMPTY WRAPPER DIV)
+        # RIGHT WORKSPACE
         with gr.Column(scale=3):
 
             # KPI STRIP
@@ -234,46 +252,57 @@ with gr.Blocks(css=CSS) as demo:
             # AI INSIGHTS
             gr.Markdown("### AI Insights")
 
-            gr.HTML("""
-            <div class="ai-grid">
+            with gr.Row():
 
-                <div class="ai-card">
-                    <h3>📊 Ads Analyst</h3>
-                    <p>Click to analyze campaign</p>
-                </div>
+                # ✅ CLICKABLE ADS ANALYST CARD
+                ads_card = gr.Button(
+                    value="📊 Ads Analyst\nClick to analyze campaign",
+                    elem_classes=["ai-button"]
+                )
 
+                gr.HTML("""
                 <div class="ai-card">
                     <h3>💰 Budget Optimizer</h3>
                     <p>Ready</p>
                 </div>
+                """)
 
+                gr.HTML("""
                 <div class="ai-card">
                     <h3>🎯 Keyword Intelligence</h3>
                     <p>Ready</p>
                 </div>
+                """)
 
+            with gr.Row():
+
+                gr.HTML("""
                 <div class="ai-card">
                     <h3>⚠️ Risk Detector</h3>
                     <p>Ready</p>
                 </div>
+                """)
 
+                gr.HTML("""
                 <div class="ai-card">
                     <h3>📈 Growth Finder</h3>
                     <p>Ready</p>
                 </div>
+                """)
 
+                gr.HTML("""
                 <div class="ai-card">
                     <h3>🧪 Experiment Ideas</h3>
                     <p>Ready</p>
                 </div>
+                """)
 
-            </div>
-            """)
-
+            # OUTPUT (BELOW CARDS)
             ads_output = gr.Markdown(
                 value="Select a campaign and click Ads Analyst.",
                 elem_id="ads-output"
             )
+
 
     # ---------------- EVENTS ----------------
 
@@ -282,6 +311,15 @@ with gr.Blocks(css=CSS) as demo:
         inputs=[campaign_table, full_state],
         outputs=[campaign_state, campaign_banner],
     )
+
+    # ✅ RESTORED CLICK FUNCTIONALITY
+    ads_card.click(
+        fn=run_ads_card,
+        inputs=campaign_state,
+        outputs=ads_output
+    )
+
+    # ---------------- LOAD ----------------
 
     demo.load(
         fn=initial_data_load,

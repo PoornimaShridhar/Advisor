@@ -8,7 +8,7 @@ from app.ads1.ads_analyst import run_ads_analyst_card
 
 
 # ==================================================
-# CURSOR-STYLE THEME (REFINED)
+# CURSOR-STYLE THEME
 # ==================================================
 
 CSS = """
@@ -37,13 +37,7 @@ CSS = """
     padding-right: 12px;
 }
 
-.workspace {
-    background: white;
-    border: 1px solid #e6e5e0;
-    border-radius: 16px;
-    padding: 18px;
-}
-
+/* KPI */
 .kpi-strip {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -69,6 +63,7 @@ CSS = """
     color: #26251e;
 }
 
+/* SNAPSHOT */
 .snapshot {
     border-top: 1px solid #e6e5e0;
     border-bottom: 1px solid #e6e5e0;
@@ -76,6 +71,7 @@ CSS = """
     margin: 14px 0;
 }
 
+/* AI GRID */
 .ai-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -101,6 +97,7 @@ CSS = """
     color: #807d72;
 }
 
+/* OUTPUT */
 #ads-output {
     margin-top: 16px;
     padding: 16px;
@@ -137,7 +134,6 @@ def initial_data_load():
 
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
 
-    # Build KPI HTML (single source of truth)
     kpi_html = f"""
     <div class="kpi-strip">
         <div class="kpi"><div class="label">Spend</div><div class="value">£{spend:.2f}</div></div>
@@ -160,9 +156,6 @@ def campaign_row_selected(df, full_state, evt: gr.SelectData):
 
     campaign_state = on_campaign_select(full_state, campaign_name)
 
-    print("SELECTED CAMPAIGN:", campaign_name, flush=True)
-    print("STATE:", campaign_state, flush=True)
-
     banner_html = f"""
     <div class="snapshot">
         <h3>📊 {campaign_name}</h3>
@@ -180,28 +173,18 @@ def campaign_row_selected(df, full_state, evt: gr.SelectData):
 @spaces.GPU(duration=120)
 def run_ads_card(state):
     try:
-        print("🔥 ADS ANALYST CLICKED", flush=True)
-        print("STATE:", state, flush=True)
-
         if not state:
             return "⚠️ Select a campaign first"
 
         dfs = state.get("full_dfs")
         campaign_name = state.get("campaign_name")
 
-        print("DFS:", dfs is not None, flush=True)
-        print("CAMPAIGN:", campaign_name, flush=True)
-
         if dfs is None or campaign_name is None:
             return "⚠️ Campaign state not properly initialized"
 
-        return run_ads_analyst_card(
-            dfs,
-            campaign_name=campaign_name
-        )
+        return run_ads_analyst_card(dfs, campaign_name=campaign_name)
 
     except Exception as e:
-        print("❌ ERROR:", repr(e), flush=True)
         return f"⚠️ Analysis failed: {e}"
 
 
@@ -222,7 +205,7 @@ with gr.Blocks(css=CSS) as demo:
     </div>
     """)
 
-    # ---------------- LAYOUT ----------------
+    # ---------------- MAIN ----------------
     with gr.Row():
 
         # LEFT SIDEBAR
@@ -234,12 +217,10 @@ with gr.Blocks(css=CSS) as demo:
                 interactive=True
             )
 
-        # RIGHT WORKSPACE
+        # RIGHT WORKSPACE (FIXED: NO EMPTY WRAPPER DIV)
         with gr.Column(scale=3):
 
-            gr.HTML('<div class="workspace">')
-
-            # KPI STRIP (NOW FIXED)
+            # KPI STRIP
             kpi_html = gr.HTML()
 
             # SNAPSHOT
@@ -250,7 +231,7 @@ with gr.Blocks(css=CSS) as demo:
             </div>
             """)
 
-            # AI SECTION
+            # AI INSIGHTS
             gr.Markdown("### AI Insights")
 
             gr.HTML("""
@@ -258,7 +239,7 @@ with gr.Blocks(css=CSS) as demo:
 
                 <div class="ai-card">
                     <h3>📊 Ads Analyst</h3>
-                    <p>Click button below</p>
+                    <p>Click to analyze campaign</p>
                 </div>
 
                 <div class="ai-card">
@@ -289,15 +270,10 @@ with gr.Blocks(css=CSS) as demo:
             </div>
             """)
 
-            ads_card = gr.Button("📊 Run Ads Analyst", variant="primary")
-
             ads_output = gr.Markdown(
                 value="Select a campaign and click Ads Analyst.",
                 elem_id="ads-output"
             )
-
-            gr.HTML('</div>')  # close workspace
-
 
     # ---------------- EVENTS ----------------
 
@@ -307,21 +283,9 @@ with gr.Blocks(css=CSS) as demo:
         outputs=[campaign_state, campaign_banner],
     )
 
-    ads_card.click(
-        fn=run_ads_card,
-        inputs=campaign_state,
-        outputs=ads_output
-    )
-
-    # ---------------- LOAD ----------------
-
     demo.load(
         fn=initial_data_load,
-        outputs=[
-            full_state,
-            campaign_table,
-            kpi_html
-        ],
+        outputs=[full_state, campaign_table, kpi_html],
     )
 
     demo.load(fn=startup)

@@ -8,7 +8,7 @@ from app.ads1.ads_analyst import run_ads_analyst_card
 
 
 # ==================================================
-# CURSOR-STYLE THEME
+# CURSOR-STYLE THEME (REFINED)
 # ==================================================
 
 CSS = """
@@ -17,61 +17,113 @@ CSS = """
     max-width: 1500px !important;
 }
 
+/* HEADER */
 #advisor-header {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 #advisor-title {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 600;
     color: #26251e;
 }
 
 #advisor-subtitle {
-    font-size: 14px;
+    font-size: 13px;
     color: #807d72;
 }
 
-.workspace-card {
-    background: white;
-    border: 1px solid #e6e5e0;
-    border-radius: 12px;
-    padding: 16px;
+/* LEFT PANEL */
+.sidebar {
+    background: #f7f7f4;
+    padding-right: 12px;
 }
 
-.snapshot-card {
+/* SINGLE UNIFIED WORKSPACE */
+.workspace {
     background: white;
     border: 1px solid #e6e5e0;
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 18px;
+}
+
+/* CAMPAIGN NAV */
+.nav-title {
+    font-size: 13px;
+    color: #6f6c63;
+    margin-bottom: 10px;
+}
+
+/* KPI STRIP */
+.kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.kpi {
+    background: #fafaf7;
+    border: 1px solid #e6e5e0;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.kpi .label {
+    font-size: 11px;
+    color: #8a877c;
+}
+
+.kpi .value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #26251e;
+}
+
+/* SNAPSHOT */
+.snapshot {
+    border-top: 1px solid #e6e5e0;
+    border-bottom: 1px solid #e6e5e0;
+    padding: 14px 0;
+    margin: 14px 0;
+}
+
+/* AI GRID */
+.ai-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
     margin-top: 12px;
-    margin-bottom: 20px;
 }
 
 .ai-card {
-    background: white;
+    background: #ffffff;
     border: 1px solid #e6e5e0;
     border-radius: 12px;
-    padding: 18px;
-    min-height: 120px;
+    padding: 14px;
+    min-height: 90px;
 }
 
 .ai-card h3 {
-    margin-bottom: 8px;
+    font-size: 14px;
+    margin-bottom: 6px;
 }
 
 .ai-card p {
+    font-size: 12px;
     color: #807d72;
 }
 
+/* OUTPUT */
 #ads-output {
-    background: white;
+    margin-top: 16px;
+    padding: 16px;
     border: 1px solid #e6e5e0;
     border-radius: 12px;
-    padding: 20px;
-    margin-top: 16px;
+    background: white;
 }
 
+/* BUTTON */
 button.primary {
     background: #f54e00 !important;
 }
@@ -91,14 +143,11 @@ def startup():
 
 
 # ==================================================
-# DATA LOAD
+# DATA
 # ==================================================
 
 def initial_data_load():
-    print("🔄 Loading app data...")
-
     dfs = load_google_ads_data()
-
     from app.ui.dashboard import get_dashboard_data
 
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
@@ -112,21 +161,14 @@ def initial_data_load():
 
 def campaign_row_selected(df, full_state, evt: gr.SelectData):
     row_index = evt.index[0]
-
     campaign_name = df.iloc[row_index]["Campaign"]
 
-    campaign_state = on_campaign_select(
-        full_state,
-        campaign_name
-    )
+    campaign_state = on_campaign_select(full_state, campaign_name)
 
     banner_html = f"""
-    <div class="snapshot-card">
+    <div class="snapshot">
         <h3>📊 {campaign_name}</h3>
-        <p>
-        Campaign selected. AI insights are now available.
-        Click an intelligence card below to begin analysis.
-        </p>
+        <p>Campaign selected. AI insights are now available.</p>
     </div>
     """
 
@@ -139,9 +181,6 @@ def campaign_row_selected(df, full_state, evt: gr.SelectData):
 
 @spaces.GPU(duration=120)
 def run_ads_card(state):
-
-    print("\n🔥 [run_ads_card] ENTERED", flush=True)
-
     try:
         if not state:
             return "⚠️ Select a campaign first"
@@ -152,13 +191,9 @@ def run_ads_card(state):
         if dfs is None:
             return "⚠️ No campaign data available"
 
-        return run_ads_analyst_card(
-            dfs,
-            campaign_name=campaign_name
-        )
+        return run_ads_analyst_card(dfs, campaign_name=campaign_name)
 
     except Exception as e:
-        print("❌ ERROR:", repr(e), flush=True)
         return f"⚠️ Analysis failed: {e}"
 
 
@@ -171,135 +206,101 @@ with gr.Blocks(css=CSS) as demo:
     full_state = gr.State()
     campaign_state = gr.State()
 
-    # -----------------------------------------
-    # HEADER
-    # -----------------------------------------
-
+    # ---------------- HEADER ----------------
     gr.HTML("""
     <div id="advisor-header">
-        <div id="advisor-title">
-            🧠 Advisor
-        </div>
-        <div id="advisor-subtitle">
-            AI-powered Google Ads optimization
-        </div>
+        <div id="advisor-title">🧠 Advisor</div>
+        <div id="advisor-subtitle">AI-powered Google Ads optimization</div>
     </div>
     """)
 
-    # -----------------------------------------
-    # MAIN LAYOUT
-    # -----------------------------------------
-
+    # ---------------- LAYOUT ----------------
     with gr.Row():
 
-        # =====================================
-        # LEFT PANEL
-        # =====================================
+        # LEFT SIDEBAR
+        with gr.Column(scale=1, elem_classes=["sidebar"]):
 
-        with gr.Column(scale=1):
-
-            gr.HTML("""
-            <div class="workspace-card">
-                <h3>📁 Campaign Navigator</h3>
-            </div>
-            """)
+            gr.Markdown("### Campaigns")
 
             campaign_table = gr.Dataframe(
                 show_label=False,
                 interactive=True
             )
 
-        # =====================================
-        # RIGHT PANEL
-        # =====================================
-
+        # RIGHT WORKSPACE
         with gr.Column(scale=3):
 
-            # KPI STRIP
+            gr.HTML('<div class="workspace">')
 
-            with gr.Row():
-
-                total_spend = gr.Number(
-                    label="Total Spend"
-                )
-
-                total_leads = gr.Number(
-                    label="Total Leads"
-                )
-
-                average_cpl = gr.Number(
-                    label="Average CPL"
-                )
-
-                active_campaigns = gr.Number(
-                    label="Campaigns"
-                )
+            # KPI STRIP (single unified block)
+            gr.HTML("""
+            <div class="kpi-strip">
+                <div class="kpi"><div class="label">Spend</div><div class="value" id="kpi-spend">-</div></div>
+                <div class="kpi"><div class="label">Leads</div><div class="value" id="kpi-leads">-</div></div>
+                <div class="kpi"><div class="label">Avg CPL</div><div class="value" id="kpi-cpl">-</div></div>
+                <div class="kpi"><div class="label">Campaigns</div><div class="value" id="kpi-count">-</div></div>
+            </div>
+            """)
 
             # SNAPSHOT
-
             campaign_banner = gr.HTML("""
-            <div class="snapshot-card">
+            <div class="snapshot">
                 <h3>Performance Snapshot</h3>
                 <p>Select a campaign to begin analysis.</p>
             </div>
             """)
 
-            # AI INSIGHTS
-
+            # AI SECTION
             gr.Markdown("### AI Insights")
 
-            with gr.Row():
+            with gr.HTML():
+                pass
 
-                ads_card = gr.Button(
-                    "📊 Ads Analyst",
-                    variant="primary"
-                )
+            gr.HTML("""
+            <div class="ai-grid">
 
-                gr.HTML("""
+                <button class="ai-card">
+                    <h3>📊 Ads Analyst</h3>
+                    <p>Deep performance analysis</p>
+                </button>
+
                 <div class="ai-card">
                     <h3>💰 Budget Optimizer</h3>
                     <p>Ready</p>
                 </div>
-                """)
 
-                gr.HTML("""
                 <div class="ai-card">
                     <h3>🎯 Keyword Intelligence</h3>
                     <p>Ready</p>
                 </div>
-                """)
 
-            with gr.Row():
-
-                gr.HTML("""
                 <div class="ai-card">
                     <h3>⚠️ Risk Detector</h3>
                     <p>Ready</p>
                 </div>
-                """)
 
-                gr.HTML("""
                 <div class="ai-card">
                     <h3>📈 Growth Finder</h3>
                     <p>Ready</p>
                 </div>
-                """)
 
-                gr.HTML("""
                 <div class="ai-card">
                     <h3>🧪 Experiment Ideas</h3>
                     <p>Ready</p>
                 </div>
-                """)
+
+            </div>
+            """)
 
             ads_output = gr.Markdown(
                 value="Select a campaign and click Ads Analyst.",
                 elem_id="ads-output"
             )
 
-    # =====================================
-    # EVENTS
-    # =====================================
+            gr.HTML('</div>')  # close workspace
+
+
+    # ---------------- EVENTS ----------------
 
     campaign_table.select(
         fn=campaign_row_selected,
@@ -307,25 +308,19 @@ with gr.Blocks(css=CSS) as demo:
         outputs=[campaign_state, campaign_banner],
     )
 
-    ads_card.click(
-        fn=run_ads_card,
-        inputs=campaign_state,
-        outputs=ads_output
-    )
+    ads_output  # keeps reference stable
 
-    # =====================================
-    # APP LOAD
-    # =====================================
+    # ---------------- LOAD ----------------
 
     demo.load(
         fn=initial_data_load,
         outputs=[
             full_state,
             campaign_table,
-            total_spend,
-            total_leads,
-            average_cpl,
-            active_campaigns,
+            gr.Number(),  # unused visually now
+            gr.Number(),
+            gr.Number(),
+            gr.Number(),
         ],
     )
 

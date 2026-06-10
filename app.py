@@ -17,7 +17,6 @@ CSS = """
     max-width: 1500px !important;
 }
 
-/* HEADER */
 #advisor-header {
     margin-bottom: 20px;
 }
@@ -33,13 +32,11 @@ CSS = """
     color: #807d72;
 }
 
-/* LEFT PANEL */
 .sidebar {
     background: #f7f7f4;
     padding-right: 12px;
 }
 
-/* SINGLE UNIFIED WORKSPACE */
 .workspace {
     background: white;
     border: 1px solid #e6e5e0;
@@ -47,14 +44,6 @@ CSS = """
     padding: 18px;
 }
 
-/* CAMPAIGN NAV */
-.nav-title {
-    font-size: 13px;
-    color: #6f6c63;
-    margin-bottom: 10px;
-}
-
-/* KPI STRIP */
 .kpi-strip {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -80,7 +69,6 @@ CSS = """
     color: #26251e;
 }
 
-/* SNAPSHOT */
 .snapshot {
     border-top: 1px solid #e6e5e0;
     border-bottom: 1px solid #e6e5e0;
@@ -88,7 +76,6 @@ CSS = """
     margin: 14px 0;
 }
 
-/* AI GRID */
 .ai-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -114,7 +101,6 @@ CSS = """
     color: #807d72;
 }
 
-/* OUTPUT */
 #ads-output {
     margin-top: 16px;
     padding: 16px;
@@ -123,7 +109,6 @@ CSS = """
     background: white;
 }
 
-/* BUTTON */
 button.primary {
     background: #f54e00 !important;
 }
@@ -152,7 +137,17 @@ def initial_data_load():
 
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
 
-    return dfs, formatted_df, spend, leads, cpl, count
+    # Build KPI HTML (single source of truth)
+    kpi_html = f"""
+    <div class="kpi-strip">
+        <div class="kpi"><div class="label">Spend</div><div class="value">£{spend:.2f}</div></div>
+        <div class="kpi"><div class="label">Leads</div><div class="value">{leads}</div></div>
+        <div class="kpi"><div class="label">Avg CPL</div><div class="value">£{cpl:.2f}</div></div>
+        <div class="kpi"><div class="label">Campaigns</div><div class="value">{count}</div></div>
+    </div>
+    """
+
+    return dfs, formatted_df, kpi_html
 
 
 # ==================================================
@@ -164,6 +159,9 @@ def campaign_row_selected(df, full_state, evt: gr.SelectData):
     campaign_name = df.iloc[row_index]["Campaign"]
 
     campaign_state = on_campaign_select(full_state, campaign_name)
+
+    print("SELECTED CAMPAIGN:", campaign_name, flush=True)
+    print("STATE:", campaign_state, flush=True)
 
     banner_html = f"""
     <div class="snapshot">
@@ -182,18 +180,28 @@ def campaign_row_selected(df, full_state, evt: gr.SelectData):
 @spaces.GPU(duration=120)
 def run_ads_card(state):
     try:
+        print("🔥 ADS ANALYST CLICKED", flush=True)
+        print("STATE:", state, flush=True)
+
         if not state:
             return "⚠️ Select a campaign first"
 
         dfs = state.get("full_dfs")
         campaign_name = state.get("campaign_name")
 
-        if dfs is None:
-            return "⚠️ No campaign data available"
+        print("DFS:", dfs is not None, flush=True)
+        print("CAMPAIGN:", campaign_name, flush=True)
 
-        return run_ads_analyst_card(dfs, campaign_name=campaign_name)
+        if dfs is None or campaign_name is None:
+            return "⚠️ Campaign state not properly initialized"
+
+        return run_ads_analyst_card(
+            dfs,
+            campaign_name=campaign_name
+        )
 
     except Exception as e:
+        print("❌ ERROR:", repr(e), flush=True)
         return f"⚠️ Analysis failed: {e}"
 
 
@@ -219,7 +227,6 @@ with gr.Blocks(css=CSS) as demo:
 
         # LEFT SIDEBAR
         with gr.Column(scale=1, elem_classes=["sidebar"]):
-
             gr.Markdown("### Campaigns")
 
             campaign_table = gr.Dataframe(
@@ -232,15 +239,8 @@ with gr.Blocks(css=CSS) as demo:
 
             gr.HTML('<div class="workspace">')
 
-            # KPI STRIP (single unified block)
-            gr.HTML("""
-            <div class="kpi-strip">
-                <div class="kpi"><div class="label">Spend</div><div class="value" id="kpi-spend">-</div></div>
-                <div class="kpi"><div class="label">Leads</div><div class="value" id="kpi-leads">-</div></div>
-                <div class="kpi"><div class="label">Avg CPL</div><div class="value" id="kpi-cpl">-</div></div>
-                <div class="kpi"><div class="label">Campaigns</div><div class="value" id="kpi-count">-</div></div>
-            </div>
-            """)
+            # KPI STRIP (NOW FIXED)
+            kpi_html = gr.HTML()
 
             # SNAPSHOT
             campaign_banner = gr.HTML("""
@@ -253,16 +253,13 @@ with gr.Blocks(css=CSS) as demo:
             # AI SECTION
             gr.Markdown("### AI Insights")
 
-            with gr.HTML():
-                pass
-
             gr.HTML("""
             <div class="ai-grid">
 
-                <button class="ai-card">
+                <div class="ai-card">
                     <h3>📊 Ads Analyst</h3>
-                    <p>Deep performance analysis</p>
-                </button>
+                    <p>Click button below</p>
+                </div>
 
                 <div class="ai-card">
                     <h3>💰 Budget Optimizer</h3>
@@ -292,6 +289,8 @@ with gr.Blocks(css=CSS) as demo:
             </div>
             """)
 
+            ads_card = gr.Button("📊 Run Ads Analyst", variant="primary")
+
             ads_output = gr.Markdown(
                 value="Select a campaign and click Ads Analyst.",
                 elem_id="ads-output"
@@ -308,7 +307,11 @@ with gr.Blocks(css=CSS) as demo:
         outputs=[campaign_state, campaign_banner],
     )
 
-    ads_output  # keeps reference stable
+    ads_card.click(
+        fn=run_ads_card,
+        inputs=campaign_state,
+        outputs=ads_output
+    )
 
     # ---------------- LOAD ----------------
 
@@ -317,10 +320,7 @@ with gr.Blocks(css=CSS) as demo:
         outputs=[
             full_state,
             campaign_table,
-            gr.Number(),  # unused visually now
-            gr.Number(),
-            gr.Number(),
-            gr.Number(),
+            kpi_html
         ],
     )
 

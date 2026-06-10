@@ -29,14 +29,40 @@ def _messages_to_prompt(messages: list[dict[str, str]]) -> str:
     for msg in messages:
         role = msg["role"]
         content = msg["content"]
-        if role == "system":
-            chunks.append(f"<|im_start|>system\n{content}\n")
-        elif role == "user":
-            chunks.append(f"<|im_start|>user\n{content}\n")
-        elif role == "assistant":
-            chunks.append(f"<|im_start|>assistant\n{content}\n")
+        chunks.append(f"<|im_start|>{role}\n{content}{_IM_END}\n")
     chunks.append("<|im_start|>assistant\n")
     return "".join(chunks)
+
+
+def _strip_thinking(text: str) -> str:
+    text = re.sub(r"<\s*think\s*>.*?<\s*/\s*think\s*>", "", text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(
+        r"<think>.*?</think>",
+        "",
+        text,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _message_text(message: dict) -> str:
+    content = (message.get("content") or "").strip()
+    reasoning = (message.get("reasoning_content") or "").strip()
+    if content and reasoning:
+        return content if len(content) >= len(reasoning) else reasoning
+    return content or reasoning
+
+
+def _run_completion(llm, messages: list[dict[str, str]]) -> str:
+    prompt = _messages_to_prompt(messages)
+    out = llm(
+        prompt,
+        max_tokens=int(os.getenv("LLAMA_MAX_TOKENS", "512")),
+        temperature=0.7,
+        stop=_STOP_SEQUENCES,
+        echo=False,
+    )
+    return (out["choices"][0].get("text") or "").strip()
 
 
 def generate_explanation(prompt: str, rec: Dict | None = None, stream: bool = False) -> str:
@@ -65,30 +91,26 @@ def generate_explanation(prompt: str, rec: Dict | None = None, stream: bool = Fa
         ]
 
         print("🚀 [generate_explanation] calling LLM...", flush=True)
-        out = llm(
-            _messages_to_prompt(messages),
-            max_tokens=int(os.getenv("LLAMA_MAX_TOKENS", "512")),
-            temperature=0.7,
-            stop=_STOP_SEQUENCES,
-            echo=False,
-        )
-        raw = (out["choices"][0].get("text") or "").strip()
+        raw = _run_completion(llm, messages)
+
+        if not raw:
+            print("⚠️ [generate_explanation] raw empty — trying create_chat_completion", flush=True)
+            try:
+                out = llm.create_chat_completion(
+                    messages=messages,
+                    max_tokens=int(os.getenv("LLAMA_MAX_TOKENS", "512")),
+                    temperature=0.7,
+                )
+                raw = _message_text(out["choices"][0]["message"])
+            except TypeError as exc:
+                print(f"⚠️ [generate_explanation] chat_completion failed: {exc}", flush=True)
+
         print("📡 [generate_explanation] response received", flush=True)
         print("📄 [generate_explanation] raw output length:", len(raw), flush=True)
+        if raw:
+            print("📄 [generate_explanation] raw preview:", raw[:400], flush=True)
 
-        clean = re.sub(
-            r"<\s*think\s*>.*?<\s*/\s*think\s*>",
-            "",
-            raw,
-            flags=re.DOTALL | re.IGNORECASE,
-        )
-        clean = re.sub(
-            r"<think>.*?</think>",
-            "",
-            clean,
-            flags=re.DOTALL | re.IGNORECASE,
-        )
-        clean = re.sub(r"\s+", " ", clean).strip()
+        clean = _strip_thinking(raw)
         clean = sanitize_explanation(clean, rec)
 
         print("✨ [generate_explanation] cleaned output ready", flush=True)
@@ -97,4 +119,4 @@ def generate_explanation(prompt: str, rec: Dict | None = None, stream: bool = Fa
     except Exception as e:
         print("❌ [generate_explanation] ERROR:", repr(e), flush=True)
         traceback.print_exc()
-        return fallback_explanation(rec)
+        return f"⚠️ Analysis failed: {e}"

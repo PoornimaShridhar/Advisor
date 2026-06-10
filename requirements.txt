@@ -8,6 +8,6 @@ requests
 huggingface_hub>=0.24.0
 pytest
 # --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
-llama-cpp-python==0.3.23
+llama-cpp-python==0.3.23 --prefer-binary
 # nvidia-cuda-runtime-cu12
 # nvidia-cublas-cu12

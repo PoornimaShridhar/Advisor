@@ -17,8 +17,72 @@ CSS = """
     max-width: 1500px !important;
 }
 
+/* ================================
+   HEADER (Romer Dark System)
+================================ */
+
 #advisor-header {
-    margin-bottom: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 80px;
+    width: 100%;
+
+    background: #070708;
+    border-bottom: 1px solid #232426;
+
+    z-index: 50;
+}
+
+/* inner container (replaces max-w-[1728px] mx-auto px-margin-safe) */
+#advisor-header .header-inner {
+    max-width: 1728px;
+    height: 100%;
+
+    margin: 0 auto;
+    padding: 0 32px; /* px-margin-safe */
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* left group */
+#advisor-header .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* gap-sm */
+}
+
+/* avatar circle */
+#advisor-header .avatar {
+    width: 32px;
+    height: 32px;
+
+    border-radius: 999px;
+    border: 1px solid #9A9DA3;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: Manrope, sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+
+    color: #e5e2e3;
+}
+
+/* title */
+#advisor-header .title {
+    font-family: Manrope, sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+
+    color: #e5e2e3;
 }
 
 #advisor-title {
@@ -219,8 +283,14 @@ with gr.Blocks(css=CSS) as demo:
     # ---------------- HEADER ----------------
     gr.HTML("""
     <div id="advisor-header">
-        <div id="advisor-title">🧠 Advisor</div>
-        <div id="advisor-subtitle">AI-powered Google Ads optimization</div>
+    <div class="header-inner">
+
+        <div class="brand">
+        <div class="avatar">A</div>
+        <div class="title">Advisor</div>
+        </div>
+
+    </div>
     </div>
     """)
 

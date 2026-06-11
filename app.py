@@ -8,126 +8,151 @@ from app.ads1.ads_analyst import run_ads_analyst_card
 
 
 # ==================================================
-# CURSOR-STYLE THEME
+# UI THEMING & HTML STRUCTURE
 # ==================================================
+
+# Adding Material Symbols to correctly render icons (bolt, grid_view, etc.)
+HEAD_HTML = """
+<link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0)" rel="stylesheet" />
+"""
 
 CSS = """
 .gradio-container {
-    background: #f7f7f4 !important;
-    max-width: 1500px !important;
+    background: #fdfdfc !important;
+    max-width: 1400px !important;
+    font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+/* HEADER */
 #advisor-header {
-    margin-bottom: 20px;
+    padding-top: 20px;
+    margin-bottom: 24px;
 }
-
 #advisor-title {
-    font-size: 26px;
-    font-weight: 600;
-    color: #26251e;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
-
+#advisor-title .material-symbols-outlined { color: #f54e00; font-size: 32px; }
 #advisor-subtitle {
-    font-size: 13px;
-    color: #807d72;
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
 }
 
-.sidebar {
-    background: #f7f7f4;
-    padding-right: 12px;
-}
-
-/* KPI */
+/* KPI STRIP */
 .kpi-strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 16px;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
 }
-
 .kpi {
-    background: #fafaf7;
-    border: 1px solid #e6e5e0;
-    border-radius: 10px;
-    padding: 10px;
+    background: #ffffff;
+    border: 1px solid #e1e0db;
+    border-radius: 8px;
+    padding: 16px 20px;
+    flex: 1;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
-
 .kpi .label {
     font-size: 11px;
-    color: #8a877c;
-}
-
-.kpi .value {
-    font-size: 16px;
+    color: #666;
+    text-transform: uppercase;
     font-weight: 600;
-    color: #26251e;
-}
-
-/* SNAPSHOT */
-.snapshot {
-    border-top: 1px solid #e6e5e0;
-    border-bottom: 1px solid #e6e5e0;
-    padding: 14px 0;
-    margin: 14px 0;
-}
-
-/* AI GRID */
-.ai-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-top: 12px;
-}
-
-/* REAL INTERACTIVE CARD */
-.ai-button {
-    all: unset;
-    display: block;
-    background: #ffffff;
-    border: 1px solid #e6e5e0;
-    border-radius: 12px;
-    padding: 14px;
-    min-height: 90px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.ai-button:hover {
-    border-color: #d6d3cc;
-    transform: translateY(-1px);
-}
-
-.ai-card {
-    background: #ffffff;
-    border: 1px solid #e6e5e0;
-    border-radius: 12px;
-    padding: 14px;
-    min-height: 90px;
-}
-
-.ai-card h3 {
-    font-size: 14px;
+    letter-spacing: 0.5px;
     margin-bottom: 6px;
 }
-
-.ai-card p {
-    font-size: 12px;
-    color: #807d72;
+.kpi .value {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
 }
 
-/* OUTPUT */
-#ads-output {
-    margin-top: 16px;
+/* SNAPSHOT BANNER */
+.snapshot {
+    background: #ffffff;
+    border: 1px solid #e1e0db;
+    border-radius: 8px;
     padding: 16px;
-    border: 1px solid #e6e5e0;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.snapshot h3 { margin: 0 !important; font-size: 16px; font-weight: 600; color: #1a1a1a; }
+.snapshot p { margin: 4px 0 0 0 !important; font-size: 13px; color: #666; }
+
+/* ACTION BUTTON */
+.primary-btn {
+    background: #1a1a1a !important;
+    color: #ffffff !important;
+    font-weight: 500 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    margin-bottom: 16px !important;
+    transition: background 0.2s;
+}
+.primary-btn:hover { background: #333333 !important; }
+
+/* ADVISOR INTELLIGENCE PANEL */
+.advisor-panel {
+    background: #ffffff;
+    border: 1px solid #e1e0db;
     border-radius: 12px;
-    background: white;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e1e0db;
+}
+.panel-header .material-symbols-outlined { color: #f54e00; }
+
+.panel-section { margin-bottom: 24px; }
+.panel-section:last-child { margin-bottom: 0; }
+
+.section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+}
+.section-body {
+    font-size: 14px;
+    color: #1a1a1a;
+    line-height: 1.5;
+}
+.section-body strong { font-weight: 600; }
+.section-body mark {
+    background: #e6f4ea;
+    color: #137333;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
 }
 
+/* TIMELINE/LOG */
+.log-item { margin-bottom: 12px; }
+.log-item:last-child { margin-bottom: 0; }
+.log-item span { font-size: 12px; color: #888; display: block; margin-top: 2px; }
 
-button.primary {
-    background: #f54e00 !important;
-}
+/* DYNAMIC OUTPUT STYLING (For markdown generated by AI) */
+#ads-output { background: transparent; border: none; }
+#ads-output h1, #ads-output h2, #ads-output h3 { color: #1a1a1a; margin-top: 16px; }
+#ads-output p { margin-bottom: 12px; font-size: 14px; line-height: 1.6; }
 """
 
 
@@ -144,7 +169,7 @@ def startup():
 
 
 # ==================================================
-# DATA
+# DATA HANDLING
 # ==================================================
 
 def initial_data_load():
@@ -153,6 +178,7 @@ def initial_data_load():
 
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
 
+    # Formats to the clean UI look instead of raw tables
     kpi_html = f"""
     <div class="kpi-strip">
         <div class="kpi"><div class="label">Spend</div><div class="value">£{spend:.2f}</div></div>
@@ -165,10 +191,6 @@ def initial_data_load():
     return dfs, formatted_df, kpi_html
 
 
-# ==================================================
-# CAMPAIGN SELECT
-# ==================================================
-
 def campaign_row_selected(df, full_state, evt: gr.SelectData):
     row_index = evt.index[0]
     campaign_name = df.iloc[row_index]["Campaign"]
@@ -177,8 +199,11 @@ def campaign_row_selected(df, full_state, evt: gr.SelectData):
 
     banner_html = f"""
     <div class="snapshot">
-        <h3>📊 {campaign_name}</h3>
-        <p>Campaign selected. AI insights are now available.</p>
+        <span class="material-symbols-outlined" style="color:#1a73e8; font-size: 32px;">analytics</span>
+        <div>
+            <h3>{campaign_name}</h3>
+            <p>Campaign selected. AI insights are queued and ready to run.</p>
+        </div>
     </div>
     """
 
@@ -186,7 +211,7 @@ def campaign_row_selected(df, full_state, evt: gr.SelectData):
 
 
 # ==================================================
-# ADS ANALYST
+# ADS ANALYST EXECUTION
 # ==================================================
 
 @spaces.GPU(duration=120)
@@ -208,10 +233,10 @@ def run_ads_card(state):
 
 
 # ==================================================
-# UI
+# MAIN UI LAYOUT
 # ==================================================
 
-with gr.Blocks(css=CSS) as demo:
+with gr.Blocks(css=CSS, head=HEAD_HTML) as demo:
 
     full_state = gr.State()
     campaign_state = gr.State()
@@ -219,88 +244,83 @@ with gr.Blocks(css=CSS) as demo:
     # ---------------- HEADER ----------------
     gr.HTML("""
     <div id="advisor-header">
-        <div id="advisor-title">🧠 Advisor</div>
+        <div id="advisor-title">A Advisor</div>
         <div id="advisor-subtitle">AI-powered Google Ads optimization</div>
     </div>
     """)
 
-    # ---------------- MAIN ----------------
+    # ---------------- KPIs ----------------
+    kpi_html = gr.HTML()
+
+    # ---------------- BODY ----------------
     with gr.Row():
+        
+        # LEFT COLUMN (Data & selection)
+        with gr.Column(scale=2, elem_classes=["sidebar"]):
+            
+            campaign_banner = gr.HTML("""
+            <div class="snapshot">
+                <span class="material-symbols-outlined" style="color:#888; font-size: 32px;">ads_click</span>
+                <div>
+                    <h3>No Campaign Selected</h3>
+                    <p>Select a campaign from the table below to access Advisor Intelligence.</p>
+                </div>
+            </div>
+            """)
 
-        # LEFT SIDEBAR
-        with gr.Column(scale=1, elem_classes=["sidebar"]):
             gr.Markdown("### Campaigns")
-
             campaign_table = gr.Dataframe(
                 show_label=False,
                 interactive=True
             )
 
-        # RIGHT WORKSPACE
-        with gr.Column(scale=3):
+        # RIGHT COLUMN (Intelligence)
+        with gr.Column(scale=1):
+            
+            ads_card = gr.Button(
+                value="⚡ Run Diagnostics",
+                elem_classes=["primary-btn"]
+            )
 
-            # KPI STRIP
-            kpi_html = gr.HTML()
+            # Loads the hardcoded HTML look natively until dynamically overwritten by your AI
+            default_intelligence_html = """
+            <div class="advisor-panel">
+                <div class="panel-header">
+                    <span class="material-symbols-outlined">bolt</span> Advisor Intelligence
+                </div>
+                
+                <div class="panel-section">
+                    <div class="section-title">RECOMMENDED ACTION</div>
+                    <div class="section-body">
+                        Reallocate resources to <strong>Project Alpha</strong> to mitigate Q4 delivery risk.
+                    </div>
+                </div>
 
-            # SNAPSHOT
-            campaign_banner = gr.HTML("""
-            <div class="snapshot">
-                <h3>Performance Snapshot</h3>
-                <p>Select a campaign to begin analysis.</p>
+                <div class="panel-section">
+                    <div class="section-title">SIGNAL SUMMARY</div>
+                    <div class="section-body">
+                        Revenue trends <mark>positive (+12%)</mark>, but capacity constraints emerging in engineering teams.
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="section-title">DECISION LOG</div>
+                    <div class="section-body log-list">
+                        <div class="log-item">
+                            <strong>Budget Approved</strong><br/>
+                            <span>2h ago • Finance Team</span>
+                        </div>
+                        <div class="log-item">
+                            <strong>Contract Signed</strong><br/>
+                            <span>5h ago • Legal Ops</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            """)
-
-            # AI INSIGHTS
-            gr.Markdown("### AI Insights")
-
-            with gr.Row():
-
-                # ✅ CLICKABLE ADS ANALYST CARD
-                ads_card = gr.Button(
-                    value="📊 Ads Analyst\nClick to analyze campaign",
-                    elem_classes=["ai-button"]
-                )
-
-                gr.HTML("""
-                <div class="ai-card">
-                    <h3>💰 Budget Optimizer</h3>
-                    <p>Ready</p>
-                </div>
-                """)
-
-                gr.HTML("""
-                <div class="ai-card">
-                    <h3>🎯 Keyword Intelligence</h3>
-                    <p>Ready</p>
-                </div>
-                """)
-
-            with gr.Row():
-
-                gr.HTML("""
-                <div class="ai-card">
-                    <h3>⚠️ Risk Detector</h3>
-                    <p>Ready</p>
-                </div>
-                """)
-
-                gr.HTML("""
-                <div class="ai-card">
-                    <h3>📈 Growth Finder</h3>
-                    <p>Ready</p>
-                </div>
-                """)
-
-                gr.HTML("""
-                <div class="ai-card">
-                    <h3>🧪 Experiment Ideas</h3>
-                    <p>Ready</p>
-                </div>
-                """)
-
-            # OUTPUT (BELOW CARDS)
+            """
+            
             ads_output = gr.Markdown(
-                value="Select a campaign and click Ads Analyst.",
+                value=default_intelligence_html,
                 elem_id="ads-output"
             )
 
@@ -313,7 +333,6 @@ with gr.Blocks(css=CSS) as demo:
         outputs=[campaign_state, campaign_banner],
     )
 
-    # ✅ RESTORED CLICK FUNCTIONALITY
     ads_card.click(
         fn=run_ads_card,
         inputs=campaign_state,

@@ -13,8 +13,10 @@ from app.ads1.ads_analyst import run_ads_analyst_card
 
 CSS = """
 .gradio-container {
-    background: #f7f7f4 !important;
-    max-width: 1500px !important;
+    background: #070708 !important;
+    color: #e5e2e3 !important;
+    max-width: 100% !important;
+    padding-top: 0 !important;
 }
 
 /* ================================
@@ -97,8 +99,48 @@ CSS = """
     color: #807d72;
 }
 
+/* HERO SECTION */
+
+.hero-section {
+    padding-top: 128px;   /* pt-32 */
+    padding-bottom: 80px;
+    padding-left: 32px;
+    padding-right: 32px;
+}
+
+.hero-inner {
+    max-width: 1516px;
+    margin: 0 auto;
+}
+
+.hero-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px; /* mb-xl */
+}
+
+.hero-title {
+    font-family: Manrope, sans-serif;
+    font-size: 76px;
+    line-height: 1.1;
+    letter-spacing: -0.055em;
+    font-weight: 520;
+    color: #e5e2e3;
+    max-width: 1000px;
+    margin-bottom: 16px;
+}
+
+.hero-subtitle {
+    font-family: Inter, sans-serif;
+    font-size: 19px;
+    color: #9A9DA3;
+    margin-bottom: 24px;
+}
+
 .sidebar {
-    background: #f7f7f4;
+    background: #0d0e0f;
+    border-right: 1px solid #232426;
     padding-right: 12px;
 }
 
@@ -111,10 +153,10 @@ CSS = """
 }
 
 .kpi {
-    background: #fafaf7;
-    border: 1px solid #e6e5e0;
-    border-radius: 10px;
-    padding: 10px;
+    background: #101112;
+    border: 1px solid #232426;
+    border-radius: 12px;
+    padding: 14px;
 }
 
 .kpi .label {
@@ -125,16 +167,19 @@ CSS = """
 .kpi .value {
     font-size: 16px;
     font-weight: 600;
-    color: #26251e;
+    color: #e5e2e3;
 }
 
 /* SNAPSHOT */
 .snapshot {
-    border-top: 1px solid #e6e5e0;
-    border-bottom: 1px solid #e6e5e0;
+    border-top: 1px solid #232426;
+    border-bottom: 1px solid #232426;
+    color: #e5e2e3;
     padding: 14px 0;
     margin: 14px 0;
 }
+
+
 
 /* AI GRID */
 .ai-grid {
@@ -163,8 +208,8 @@ CSS = """
 }
 
 .ai-card {
-    background: #ffffff;
-    border: 1px solid #e6e5e0;
+    background: #101112;
+    border: 1px solid #232426;
     border-radius: 12px;
     padding: 14px;
     min-height: 90px;
@@ -177,7 +222,7 @@ CSS = """
 
 .ai-card p {
     font-size: 12px;
-    color: #807d72;
+    color: #9A9DA3;
 }
 
 /* OUTPUT */
@@ -186,7 +231,9 @@ CSS = """
     padding: 16px;
     border: 1px solid #e6e5e0;
     border-radius: 12px;
-    background: white;
+    background: #101112;
+    border: 1px solid #232426;
+    color: #e5e2e3;
 }
 
 
@@ -294,6 +341,28 @@ with gr.Blocks(css=CSS) as demo:
     </div>
     </div>
     """)
+
+    gr.HTML("""
+        <div class="hero-section">
+            <div class="hero-inner">
+
+                <div class="hero-row">
+
+                    <div>
+                        <div class="hero-title">
+                            AI-powered Google Ads optimization
+                        </div>
+
+                        <div class="hero-subtitle">
+                             Spend £{spend:.2f} | Leads {leads} | Avg CPL £{cpl:.2f} | Campaigns {count}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        """)
 
     # ---------------- MAIN ----------------
     with gr.Row():

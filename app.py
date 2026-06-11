@@ -61,7 +61,8 @@ CSS = """
     width: 32px;
     height: 32px;
 
-    border-radius: 999px;
+    border-radius: 6px;   /* 🔥 key fix: rounded square */
+
     border: 1px solid #9A9DA3;
 
     display: flex;

@@ -351,105 +351,261 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
     # ---------------- MAIN ----------------
     with gr.Row():
 
-        # LEFT SIDEBAR
-        with gr.Column(scale=1, elem_classes=["sidebar"]):
-            gr.Markdown("### Campaigns")
-
-            campaign_table = gr.Dataframe(
-                show_label=False,
-                interactive=True
-            )
-
-        # RIGHT WORKSPACE
-        with gr.Column(scale=3):
-
-            # KPI STRIP
-            # kpi_html = gr.HTML()
-
-            # SNAPSHOT
-            campaign_banner = gr.HTML("""
-            <div class="snapshot">
-                <h3>Performance Snapshot</h3>
-                <p>Select a campaign to begin analysis.</p>
+        gr.HTML("""
+            <div class="w-full bg-custom-card-bg rounded-xl border overflow-hidden flex h-[620px] inner-glow shadow-2xl relative border-white/[0.05]">
+        <!-- Sidebar -->
+        <div class="w-64 bg-custom-sidebar border-r border-custom-divider p-md flex flex-col gap-sm">
+        <div class="text-[10px] text-custom-text-muted uppercase tracking-[0.2em] mb-6 px-4 opacity-40 font-bold">Campaigns</div>
+        <div class="flex flex-col gap-1">
+        <div class="flex items-center gap-3 px-4 py-2 bg-white/[0.04] rounded-lg text-on-surface font-medium cursor-pointer transition-colors border border-white/[0.05]">
+        <span class="material-symbols-outlined text-[18px]">grid_view</span>
+        <span class="text-body-md">Birla Open Minds Yelahanka</span>
+        </div>
+        <div class="flex items-center gap-3 px-4 py-2 text-custom-text-muted hover:text-on-surface hover:bg-white/[0.04] rounded-lg cursor-pointer transition-colors group">
+        <span class="material-symbols-outlined text-[18px] opacity-40 group-hover:opacity-100">sensors</span>
+        <span class="text-body-md">Admissions Open 2026</span>
+        </div>
+        <div class="flex items-center gap-3 px-4 py-2 text-custom-text-muted hover:text-on-surface hover:bg-white/[0.04] rounded-lg cursor-pointer transition-colors group">
+        <span class="material-symbols-outlined text-[18px] opacity-40 group-hover:opacity-100">check_circle</span>
+        <span class="text-body-md">Early Bird Enrollment Offer</span>
+        </div>
+        <div class="flex items-center gap-3 px-4 py-2 text-custom-text-muted hover:text-on-surface hover:bg-white/[0.04] rounded-lg cursor-pointer transition-colors group">
+        <span class="material-symbols-outlined text-[18px] opacity-40 group-hover:opacity-100">bar_chart</span>
+        <span class="text-body-md">Summer Camp</span>
+        </div>
+        <div class="flex items-center gap-3 px-4 py-2 text-custom-text-muted hover:text-on-surface hover:bg-white/[0.04] rounded-lg cursor-pointer transition-colors group">
+        <span class="material-symbols-outlined text-[18px] opacity-40 group-hover:opacity-100">warning</span>
+        <span class="text-body-md">Parent Orientation Program</span>
+        </div>
+        <div class="mt-4 flex flex-col gap-1">
+        <div class="flex items-center gap-3 px-4 py-2 text-custom-text-muted hover:text-on-surface hover:bg-white/[0.04] rounded-lg cursor-pointer transition-colors group">
+        <span class="material-symbols-outlined text-[18px] opacity-40 group-hover:opacity-100">group</span>
+        <span class="text-body-md">Book a Free School Tour</span>
+        </div>
+        <div class="flex items-center gap-3 px-4 py-2 text-custom-text-muted hover:text-on-surface hover:bg-white/[0.04] rounded-lg cursor-pointer transition-colors group">
+        <span class="material-symbols-outlined text-[18px] opacity-40 group-hover:opacity-100">article</span>
+        <span class="text-body-md">Discover Joyful Learning</span>
+        </div>
+        </div>
+        </div>
+        </div>
+        <!-- Center Area -->
+        <div class="flex-1 p-lg flex flex-col gap-lg bg-[#0a0a0b] relative overflow-y-auto">
+        <div class="grid grid-cols-4 gap-4">
+        <div class="bg-custom-card-bg border border-white/[0.05] rounded-xl p-5 inner-glow"><div class="flex justify-between items-start mb-3">
+        <div class="text-[10px] text-custom-text-muted font-bold uppercase tracking-widest opacity-60">SPEND</div>
+        <div class="font-mono-data text-[9px] text-primary/40 uppercase tracking-tighter">[SYNC: ACTIVE]</div>
+        </div>
+        <div class="font-h3 text-h3 text-on-surface font-bold tracking-tight">$1965.76</div>
+        <div class="flex items-center justify-between mt-3">
+        <div class="text-[11px] text-secondary font-medium flex items-center gap-1 opacity-90">
+        <span class="material-symbols-outlined text-[14px]">trending_up</span>+12% vs last month
             </div>
-            """)
-
-            # AI INSIGHTS
-            gr.Markdown("### AI Insights")
-
-            with gr.Row():
-
-                # ✅ CLICKABLE ADS ANALYST CARD
-                ads_card = gr.Button(
-                    value="📊 Ads Analyst\nClick to analyze campaign",
-                    elem_classes=["ai-button"]
-                )
-
-                gr.HTML("""
-                <div class="ai-card">
-                    <h3>💰 Budget Optimizer</h3>
-                    <p>Ready</p>
+        <div class="flex gap-0.5">
+        <div class="w-0.5 h-2 bg-secondary opacity-20"></div>
+        <div class="w-0.5 h-3 bg-secondary opacity-40"></div>
+        <div class="w-0.5 h-2 bg-secondary opacity-60"></div>
+        <div class="w-0.5 h-4 bg-secondary"></div>
+        </div>
+        </div></div>
+        <div class="bg-custom-card-bg border border-white/[0.05] rounded-xl p-5 inner-glow"><div class="flex justify-between items-start mb-3">
+        <div class="text-[10px] text-custom-text-muted font-bold uppercase tracking-widest opacity-60">LEADS</div>
+        <div class="font-mono-data text-[9px] text-tertiary/40 uppercase tracking-tighter">[QUEUE: 14]</div>
+        </div>
+        <div class="font-h3 text-h3 text-on-surface font-bold tracking-tight">14</div>
+        <div class="text-[11px] text-tertiary font-medium mt-3 opacity-90">3 requiring attention</div></div>
+        <div class="bg-custom-card-bg border border-white/[0.05] rounded-xl p-5 inner-glow"><div class="flex justify-between items-start mb-3">
+        <div class="text-[10px] text-custom-text-muted font-bold uppercase tracking-widest opacity-60">CPL</div>
+        <div class="font-mono-data text-[9px] text-[#E5FD17]/40 uppercase tracking-tighter">[HEARTBEAT: OK]</div>
+        </div>
+        <div class="font-h3 text-h3 text-on-surface font-bold uppercase tracking-tight">258.39</div>
+        <div class="text-[11px] text-[#E5FD17] font-medium mt-3 opacity-90 flex items-center gap-2">
+        <span class="w-1 h-1 rounded-full bg-[#E5FD17] animate-pulse"></span>
+            All systems stable
+        </div></div>
+        <div class="bg-custom-card-bg border border-white/[0.05] rounded-xl p-5 inner-glow"><div class="flex justify-between items-start mb-3">
+        <div class="text-[10px] text-custom-text-muted font-bold uppercase tracking-widest opacity-60">CTR</div>
+        <div class="font-mono-data text-[9px] text-custom-text-muted/40 uppercase tracking-tighter">[LOAD: OPT]</div>
+        </div>
+        <div class="font-h3 text-h3 text-on-surface font-bold tracking-tight">0.02578</div>
+        <div class="text-[11px] text-custom-text-muted font-medium mt-3 opacity-90">Optimal range</div></div>
+        </div>
+        <div class="bg-custom-card-bg border border-custom-divider rounded-xl p-4 inner-glow flex flex-col h-[220px]"><div class="flex justify-between items-center mb-6 px-1">
+        <div class="flex items-center gap-4">
+        <div class="text-label-sm font-bold text-on-surface uppercase tracking-widest opacity-60">Signal Flow</div>
+        <div class="font-mono-data text-[9px] text-primary/40 uppercase tracking-tighter">[LATENCY: 12ms]</div>
+        </div>
+        <div class="flex gap-4 text-[10px] text-custom-text-muted font-bold uppercase tracking-wider">
+        <span class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-primary"></span>Revenue</span>
+        <span class="flex items-center gap-1.5"><span class="w-1 h-1 rounded-full bg-white/20"></span>Goal</span>
+        </div>
+        </div>
+        <div class="flex-1 rounded-lg bg-[#070708]/50 border border-white/[0.02] relative overflow-hidden">
+        <!-- Faint Horizontal Grid Lines -->
+        <div class="absolute inset-0 flex flex-col justify-between py-2 opacity-10">
+        <div class="border-t border-white/[0.1] w-full"></div>
+        <div class="border-t border-white/[0.1] w-full"></div>
+        <div class="border-t border-white/[0.1] w-full"></div>
+        <div class="border-t border-white/[0.1] w-full"></div>
+        </div>
+        <!-- Vertical Grid -->
+        <div class="absolute inset-0 grid grid-cols-6 h-full w-full">
+        <div class="border-r border-white/[0.05]"></div>
+        <div class="border-r border-white/[0.05]"></div>
+        <div class="border-r border-white/[0.05]"></div>
+        <div class="border-r border-white/[0.05]"></div>
+        <div class="border-r border-white/[0.05]"></div>
+        </div>
+        <svg class="absolute bottom-0 w-full h-[80%]" preserveaspectratio="none" viewbox="0 0 100 100">
+        <defs>
+        <lineargradient id="gradient-flow-v3" x1="0%" x2="0%" y1="0%" y2="100%">
+        <stop offset="0%" stop-color="#5E6BFF" stop-opacity="0.15"></stop>
+        <stop offset="100%" stop-color="#5E6BFF" stop-opacity="0"></stop>
+        </lineargradient>
+        <filter height="140%" id="glow" width="140%" x="-20%" y="-20%">
+        <fegaussianblur result="blur" stddeviation="1.5"></fegaussianblur>
+        <fecomposite in="SourceGraphic" in2="blur" operator="over"></fecomposite>
+        </filter>
+        </defs>
+        <!-- Area Fill -->
+        <path d="M0,80 C20,78 35,85 50,65 C65,45 80,30 100,25 L100,100 L0,100 Z" fill="url(#gradient-flow-v3)"></path>
+        <!-- Main Line -->
+        <path d="M0,80 C20,78 35,85 50,65 C65,45 80,30 100,25" fill="none" filter="url(#glow)" stroke="#5E6BFF" stroke-linecap="round" stroke-width="1"></path>
+        <!-- Data Points -->
+        <circle cx="20" cy="78" fill="#5E6BFF" r="1"></circle>
+        <circle cx="50" cy="65" fill="white" r="1.5" stroke="#5E6BFF" stroke-width="0.5"></circle>
+        <circle cx="80" cy="30" fill="#5E6BFF" r="1"></circle>
+        </svg>
+        <!-- Axis Labels -->
+        <div class="absolute bottom-1 right-2 font-mono-data text-[7px] text-custom-text-muted/30 uppercase">t: 127.4s</div>
+        <div class="absolute top-2 left-2 font-mono-data text-[7px] text-custom-text-muted/30 uppercase">y: $V</div>
+        </div></div>
+        <div class="grid grid-cols-3 gap-3">
+        <div class="bg-custom-card-bg border border-custom-divider rounded-xl p-4 inner-glow">
+        <div class="text-body-md font-bold text-on-surface border-b border-white/[0.05] pb-3 mb-3">Ads Analyst</div>
+        <div class="space-y-3">
+        <div class="flex justify-between items-center text-body-md">
+        <span class="text-on-surface">Campaign insights.</span>
+        <!-- <span class="text-custom-text-muted text-[11px]">TODAY</span> -->
+        </div>
+        </div>
+        </div>
+        <div class="bg-custom-card-bg border border-custom-divider rounded-xl p-4 inner-glow">
+        <div class="text-body-md font-bold text-on-surface border-b border-white/[0.05] pb-3 mb-3">Budget Optimizer
+        </div>
+        <div class="space-y-3">
+        <div class="flex justify-between items-center text-body-md">
+        <span class="text-on-surface">Where to adjust spend?</span>
+        </div>
+        </div>
+        </div>
+        <div class="bg-custom-card-bg border border-custom-divider rounded-xl p-4 inner-glow">
+        <div class="text-body-md font-bold text-on-surface border-b border-white/[0.05] pb-3 mb-3">Keyword Inspector
+        </div>
+        <div class="space-y-3">
+        <div class="flex justify-between items-center text-body-md">
+        <span class="text-on-surface">Winning versus wasting keywords.</span>
+        </div>
+        </div>
+        </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+        <div class="bg-custom-card-bg border border-custom-divider rounded-xl p-4 inner-glow">
+        <div class="text-body-md font-bold text-on-surface border-b border-white/[0.05] pb-3 mb-3">Search Term Cleaner</div>
+        <div class="space-y-3">
+        <div class="flex justify-between items-center text-body-md">
+        <span class="text-on-surface">Optimize search term list.</span>
+        <!-- <span class="text-custom-text-muted text-[11px]">TODAY</span> -->
+        </div>
+        </div>
+        </div>
+        <div class="bg-custom-card-bg border border-custom-divider rounded-xl p-4 inner-glow">
+        <div class="text-body-md font-bold text-on-surface border-b border-white/[0.05] pb-3 mb-3">Growth Finder
+        </div>
+        <div class="space-y-3">
+        <div class="flex justify-between items-center text-body-md">
+        <span class="text-on-surface">Where to scale?</span>
+        </div>
+        </div>
+        </div>
+        <div class="bg-custom-card-bg border border-custom-divider rounded-xl p-4 inner-glow">
+        <div class="text-body-md font-bold text-on-surface border-b border-white/[0.05] pb-3 mb-3">Campaign Doctor
+        </div>
+        <div class="space-y-3">
+        <div class="flex justify-between items-center text-body-md">
+        <span class="text-on-surface">What limits performance?</span>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        <!-- Right Panel -->
+        <div class="w-80 bg-custom-panel border-l border-custom-divider p-md flex flex-col gap-md relative">
+        <div class="text-body-md font-bold text-on-surface border-b border-white/[0.05] pb-5 mb-2 flex justify-between items-center px-1">
+        <div class="flex items-center gap-2.5">
+        <span class="material-symbols-outlined text-[20px] text-secondary">bolt</span>
+                Advisor Intelligence
+            </div>
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+        </div>
+        <div class="flex flex-col gap-8 px-1">
+        <div class="space-y-3">
+        <div class="text-[10px] font-bold text-custom-text-muted uppercase tracking-widest opacity-50">Recommended Action</div>
+        <div class="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4 text-body-md text-on-surface leading-relaxed shadow-sm">
+                    Reallocate resources to <span class="text-primary font-bold">Project Alpha</span> to mitigate Q4 delivery risk.
                 </div>
-                """)
-
-                gr.HTML("""
-                <div class="ai-card">
-                    <h3>🎯 Keyword Intelligence</h3>
-                    <p>Ready</p>
+        </div>
+        <div class="space-y-3">
+        <div class="text-[10px] font-bold text-custom-text-muted uppercase tracking-widest opacity-50">Signal summary</div>
+        <div class="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4 text-body-md text-on-surface leading-relaxed shadow-sm">
+                    Revenue trends <span class="text-secondary font-medium">positive (+12%)</span>, but capacity constraints emerging in engineering teams.
                 </div>
-                """)
-
-            with gr.Row():
-
-                gr.HTML("""
-                <div class="ai-card">
-                    <h3>⚠️ Risk Detector</h3>
-                    <p>Ready</p>
-                </div>
-                """)
-
-                gr.HTML("""
-                <div class="ai-card">
-                    <h3>📈 Growth Finder</h3>
-                    <p>Ready</p>
-                </div>
-                """)
-
-                gr.HTML("""
-                <div class="ai-card">
-                    <h3>🧪 Experiment Ideas</h3>
-                    <p>Ready</p>
-                </div>
-                """)
-
-            # OUTPUT (BELOW CARDS)
-            ads_output = gr.Markdown(
-                value="Select a campaign and click Ads Analyst.",
-                elem_id="ads-output"
-            )
-
+        </div>
+        <div class="flex flex-col gap-3 flex-1">
+        <div class="text-[10px] font-bold text-custom-text-muted uppercase tracking-widest opacity-50">Decision log</div>
+        <div class="space-y-2 overflow-y-auto pr-1">
+        <div class="group flex items-start gap-4 p-2.5 hover:bg-white/[0.02] rounded-lg transition-colors">
+        <div class="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+        <div>
+        <div class="text-label-sm text-on-surface font-medium">Budget Approved</div>
+        <div class="text-[11px] text-custom-text-muted mt-1 opacity-70">2h ago • Finance Team</div>
+        </div>
+        </div>
+        <div class="group flex items-start gap-4 p-2.5 hover:bg-white/[0.02] rounded-lg transition-colors">
+        <div class="w-1.5 h-1.5 rounded-full bg-white/20 mt-2 flex-shrink-0"></div>
+        <div>
+        <div class="text-label-sm text-on-surface opacity-80 font-medium">Contract Signed</div>
+        <div class="text-[11px] text-custom-text-muted mt-1 opacity-70">5h ago • Legal Ops</div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        """)
 
     # ---------------- EVENTS ----------------
 
-    campaign_table.select(
-        fn=campaign_row_selected,
-        inputs=[campaign_table, full_state],
-        outputs=[campaign_state, campaign_banner],
-    )
+    # campaign_table.select(
+    #     fn=campaign_row_selected,
+    #     inputs=[campaign_table, full_state],
+    #     outputs=[campaign_state, campaign_banner],
+    # )
 
-    # ✅ RESTORED CLICK FUNCTIONALITY
-    ads_card.click(
-        fn=run_ads_card,
-        inputs=campaign_state,
-        outputs=ads_output
-    )
+    # # ✅ RESTORED CLICK FUNCTIONALITY
+    # ads_card.click(
+    #     fn=run_ads_card,
+    #     inputs=campaign_state,
+    #     outputs=ads_output
+    # )
 
-    # ---------------- LOAD ----------------
+    # # ---------------- LOAD ----------------
 
-    demo.load(
-        fn=initial_data_load,
-        outputs=[full_state, campaign_table, kpi_html],
-    )
+    # demo.load(
+    #     fn=initial_data_load,
+    #     outputs=[full_state, campaign_table, kpi_html],
+    # )
 
     demo.load(fn=startup)
 

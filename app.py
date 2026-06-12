@@ -1,3 +1,5 @@
+import html
+
 import gradio as gr
 import spaces
 
@@ -35,6 +37,7 @@ body,
     background: var(--custom-bg) !important;
     color: var(--on-surface) !important;
     font-family: Inter, sans-serif !important;
+    color-scheme: dark !important;
 }
 
 .gradio-container {
@@ -51,6 +54,11 @@ footer,
 .api-docs,
 .built-with {
     display: none !important;
+}
+
+.gradio-container,
+.gradio-container * {
+    color: var(--on-surface);
 }
 
 /* ================================
@@ -138,10 +146,10 @@ footer,
 
 .hero-title {
     font-family: Manrope, sans-serif;
-    font-size: 76px;
-    line-height: 1.1;
+    font-size: 76px !important;
+    line-height: 1.1 !important;
     letter-spacing: 0;
-    font-weight: 520;
+    font-weight: 520 !important;
     color: var(--on-surface) !important;
     max-width: 1000px;
     margin-bottom: 16px;
@@ -231,41 +239,71 @@ footer,
     box-shadow: none !important;
 }
 
-.campaign-sidebar .wrap,
-.campaign-sidebar .dataframe,
-.campaign-sidebar table {
+.campaign-radio,
+.campaign-radio > div,
+.campaign-radio fieldset,
+.campaign-radio .wrap {
     background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
-.campaign-sidebar table {
-    border-collapse: separate !important;
-    border-spacing: 0 4px !important;
+.campaign-radio .container,
+.campaign-radio .options,
+.campaign-radio [role="radiogroup"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    overflow: visible !important;
+    max-height: none !important;
 }
 
-.campaign-sidebar th {
+.campaign-radio label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-height: 36px !important;
+    margin: 0 !important;
+    padding: 8px 12px !important;
+    border: 1px solid transparent !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    color: var(--custom-text-muted) !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    cursor: pointer !important;
+}
+
+.campaign-radio label::before {
+    content: "grid_view";
+    font-family: "Material Symbols Outlined";
+    font-size: 18px;
+    line-height: 1;
+    color: rgba(154, 157, 163, 0.55);
+    flex: 0 0 auto;
+}
+
+.campaign-radio label:hover,
+.campaign-radio label:has(input:checked) {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    color: var(--on-surface) !important;
+}
+
+.campaign-radio label:has(input:checked)::before {
+    color: var(--secondary);
+}
+
+.campaign-radio input {
     display: none !important;
 }
 
-.campaign-sidebar td {
-    background: transparent !important;
-    border: 0 !important;
-    color: var(--custom-text-muted) !important;
-    font-size: 14px !important;
-    padding: 9px 14px !important;
+.campaign-radio span {
+    color: inherit !important;
     white-space: normal !important;
-}
-
-.campaign-sidebar tr:hover td,
-.campaign-sidebar tr.selected td {
-    background: rgba(255, 255, 255, 0.04) !important;
-    color: var(--on-surface) !important;
-    border-radius: 6px !important;
-}
-
-.campaign-sidebar .table-wrap,
-.campaign-sidebar .dataframe-container {
-    max-height: 520px !important;
-    overflow-y: auto !important;
 }
 
 /* ================================
@@ -295,7 +333,7 @@ footer,
 }
 
 .kpi-label {
-    color: var(--custom-text-muted);
+    color: #ffffff !important;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.12em;
@@ -305,7 +343,7 @@ footer,
 
 .kpi-status {
     font-size: 9px;
-    color: rgba(190, 194, 255, 0.45);
+    color: rgba(255, 255, 255, 0.68) !important;
     text-transform: uppercase;
     letter-spacing: 0;
     white-space: nowrap;
@@ -315,14 +353,30 @@ footer,
     font-family: Manrope, sans-serif;
     font-size: 24px;
     line-height: 1.2;
-    color: var(--on-surface);
+    color: #ffffff !important;
     font-weight: 700;
 }
 
 .kpi-note {
     margin-top: 12px;
-    color: var(--secondary);
     font-size: 11px;
+    font-weight: 600;
+}
+
+.note-sky {
+    color: #50d8e9 !important;
+}
+
+.note-brown {
+    color: #c88a5a !important;
+}
+
+.note-olive {
+    color: #a9b75f !important;
+}
+
+.note-violet {
+    color: #bec2ff !important;
 }
 
 .signal-card {
@@ -397,6 +451,7 @@ footer,
 
 .ai-row {
     gap: 12px !important;
+    align-items: stretch !important;
 }
 
 .ai-card-html,
@@ -407,6 +462,11 @@ footer,
     padding: 16px !important;
     min-height: 116px !important;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.ai-row > *,
+.ai-row .block {
+    align-self: stretch !important;
 }
 
 .ai-card-html h3 {
@@ -432,6 +492,24 @@ footer,
     font-weight: 700 !important;
     transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
     white-space: pre-line !important;
+    margin: 0 !important;
+    height: 116px !important;
+}
+
+.ai-button-card button,
+button.ai-button-card {
+    height: 100% !important;
+    min-height: 116px !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+    white-space: pre-line !important;
+    background: transparent !important;
+    color: var(--on-surface) !important;
+    border: 0 !important;
+    box-shadow: none !important;
 }
 
 .ai-button-card:hover {
@@ -574,7 +652,7 @@ footer,
     }
 
     .hero-title {
-        font-size: 42px;
+        font-size: 42px !important;
     }
 
     .kpi-grid {
@@ -634,7 +712,7 @@ def build_kpi_html(spend, leads, cpl, count):
                 <div class="kpi-status">[SYNC: ACTIVE]</div>
             </div>
             <div class="kpi-value">{format_money(spend)}</div>
-            <div class="kpi-note">Live Google Ads data</div>
+            <div class="kpi-note note-sky">Live Google Ads data</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-top">
@@ -642,7 +720,7 @@ def build_kpi_html(spend, leads, cpl, count):
                 <div class="kpi-status">[QUEUE: {leads}]</div>
             </div>
             <div class="kpi-value">{leads}</div>
-            <div class="kpi-note">Tracked conversions</div>
+            <div class="kpi-note note-brown">Tracked conversions</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-top">
@@ -650,7 +728,7 @@ def build_kpi_html(spend, leads, cpl, count):
                 <div class="kpi-status">[HEARTBEAT: OK]</div>
             </div>
             <div class="kpi-value">{format_money(cpl)}</div>
-            <div class="kpi-note">Cost per lead</div>
+            <div class="kpi-note note-olive">Cost per lead</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-top">
@@ -658,7 +736,7 @@ def build_kpi_html(spend, leads, cpl, count):
                 <div class="kpi-status">[LOAD: OPT]</div>
             </div>
             <div class="kpi-value">{count}</div>
-            <div class="kpi-note">Available for analysis</div>
+            <div class="kpi-note note-violet">Available for analysis</div>
         </div>
     </div>
     """
@@ -750,23 +828,34 @@ def initial_data_load():
     from app.ui.dashboard import get_dashboard_data
 
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
-    campaign_df = formatted_df[["Campaign"]] if "Campaign" in formatted_df.columns else formatted_df
+    campaign_choices = (
+        formatted_df["Campaign"].dropna().astype(str).tolist()
+        if "Campaign" in formatted_df.columns
+        else []
+    )
     hero_html = build_hero_html(spend, leads, cpl, count)
     kpi_html = build_kpi_html(spend, leads, cpl, count)
-    return dfs, campaign_df, hero_html, kpi_html
+    return dfs, gr.update(choices=campaign_choices, value=None), hero_html, kpi_html
 
 
 # ==================================================
 # CAMPAIGN SELECT
 # ==================================================
 
-def campaign_row_selected(df, full_state, evt: gr.SelectData):
-    row_index = evt.index[0]
-    campaign_name = df.iloc[row_index]["Campaign"]
+def campaign_selected(campaign_name, full_state):
+    if not campaign_name:
+        return None, """
+        <div class="snapshot">
+            <h3>Performance Snapshot</h3>
+            <p>Select a campaign to begin analysis.</p>
+        </div>
+        """
+
     campaign_state = on_campaign_select(full_state, campaign_name)
+    safe_campaign_name = html.escape(str(campaign_name))
     banner_html = f"""
     <div class="snapshot">
-        <h3>{campaign_name}</h3>
+        <h3>{safe_campaign_name}</h3>
         <p>Campaign selected. AI insights are now available.</p>
     </div>
     """
@@ -820,12 +909,11 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
         with gr.Row(elem_id="dashboard-shell", elem_classes=["dashboard-row"]):
             with gr.Column(elem_classes=["campaign-sidebar"]):
                 gr.HTML('<div class="panel-label">Campaigns</div>')
-                campaign_table = gr.Dataframe(
+                campaign_picker = gr.Radio(
+                    choices=[],
                     show_label=False,
-                    interactive=True,
-                    wrap=True,
-                    row_count=(1, "dynamic"),
-                    col_count=(1, "dynamic"),
+                    container=False,
+                    elem_classes=["campaign-radio"],
                 )
 
             with gr.Column(scale=1, elem_classes=["center-workspace"]):
@@ -860,9 +948,9 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
             with gr.Column(elem_classes=["right-panel"]):
                 gr.HTML(RIGHT_PANEL_HTML)
 
-    campaign_table.select(
-        fn=campaign_row_selected,
-        inputs=[campaign_table, full_state],
+    campaign_picker.change(
+        fn=campaign_selected,
+        inputs=[campaign_picker, full_state],
         outputs=[campaign_state, campaign_banner],
     )
 
@@ -874,7 +962,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
 
     demo.load(
         fn=initial_data_load,
-        outputs=[full_state, campaign_table, hero_html, kpi_html],
+        outputs=[full_state, campaign_picker, hero_html, kpi_html],
     )
 
     demo.load(fn=startup)

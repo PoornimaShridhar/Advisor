@@ -147,47 +147,10 @@ CSS = """
     color: inherit;
 }
 
-.sidebar-container {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.sidebar-title {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    opacity: 0.4;
-    font-weight: 700;
-    margin-bottom: 12px;
-    padding-left: 8px;
-}
-
-.campaign-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    padding: 10px 12px;
-    border-radius: 10px;
-
-    cursor: pointer;
-    transition: all 0.15s ease;
-
-    color: #9a9da3;
-    border: 1px solid transparent;
-}
-
-.campaign-item:hover {
-    background: rgba(255,255,255,0.04);
-    color: #e5e2e3;
-}
-
-.campaign-item.active {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: #ffffff;
+.sidebar {
+    background: #0d0e0f;
+    border-right: 1px solid #232426;
+    padding-right: 12px;
 }
 
 /* KPI */
@@ -300,6 +263,7 @@ def startup():
     except Exception as e:
         print("⚠️ DB failed:", e, flush=True)
 
+
 # ==================================================
 # DATA
 # ==================================================
@@ -309,33 +273,6 @@ def initial_data_load():
     from app.ui.dashboard import get_dashboard_data
 
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
-
-    # extract campaigns dynamically
-    campaigns = formatted_df["Campaign"].dropna().tolist()
-
-    campaign_items = []
-    for i, c in enumerate(campaigns):
-        active = i == 0  # first one active by default
-
-        campaign_items.append(f"""
-            <div class="campaign-item {'active' if active else ''}" 
-                onclick="gradioApp().querySelector('#campaign_click').value='{c}'; 
-                        gradioApp().querySelector('#campaign_click').dispatchEvent(new Event('input'));">
-                
-                <span class="material-symbols-outlined text-[18px]">
-                    {'grid_view' if active else 'sensors'}
-                </span>
-
-                <span>{c}</span>
-            </div>
-            """)
-
-    sidebar_html = f"""
-    <div class="sidebar-container">
-        <div class="sidebar-title">Campaigns</div>
-        {''.join(campaign_items)}
-    </div>
-    """
 
     kpi_html = f"""
     <div class="hero-section">
@@ -352,8 +289,7 @@ def initial_data_load():
         </div>
     </div>
     """
-
-    return dfs, formatted_df, kpi_html, sidebar_html
+    return dfs, formatted_df, kpi_html
 
 # ==================================================
 # CAMPAIGN SELECT
@@ -369,18 +305,6 @@ def campaign_row_selected(df, full_state, evt: gr.SelectData):
         <p>Campaign selected. AI insights are now available.</p>
     </div>
     """
-    return campaign_state, banner_html
-
-def campaign_selected_from_html(campaign_name, full_state):
-    campaign_state = on_campaign_select(full_state, campaign_name)
-
-    banner_html = f"""
-    <div class="snapshot">
-        <h3>📊 {campaign_name}</h3>
-        <p>Campaign selected. AI insights are now available.</p>
-    </div>
-    """
-
     return campaign_state, banner_html
 
 # ==================================================
@@ -428,9 +352,13 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
     with gr.Row():
 
         # LEFT SIDEBAR
-        with gr.Sidebar(position="left"):
-            campaign_list_html = gr.HTML()
-            campaign_click = gr.Textbox(visible=False)
+        with gr.Column(scale=1, elem_classes=["sidebar"]):
+            gr.Markdown("### Campaigns")
+
+            campaign_table = gr.Dataframe(
+                show_label=False,
+                interactive=True
+            )
 
         # RIGHT WORKSPACE
         with gr.Column(scale=3):
@@ -503,11 +431,10 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
 
     # ---------------- EVENTS ----------------
 
-
-    campaign_click.change(
-        fn=campaign_selected_from_html,
-        inputs=[campaign_click, full_state],
-        outputs=[campaign_state, campaign_banner]
+    campaign_table.select(
+        fn=campaign_row_selected,
+        inputs=[campaign_table, full_state],
+        outputs=[campaign_state, campaign_banner],
     )
 
     # ✅ RESTORED CLICK FUNCTIONALITY
@@ -521,7 +448,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
 
     demo.load(
         fn=initial_data_load,
-        outputs=[full_state, campaign_list_html, kpi_html],
+        outputs=[full_state, campaign_table, kpi_html],
     )
 
     demo.load(fn=startup)

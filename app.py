@@ -16,7 +16,7 @@ CSS = """
     background: #070708 !important;
     color: #e5e2e3 !important;
     max-width: 100% !important;
-    padding-top: 0 !important;
+    padding-top: 5% !important;
 }
 
 /* ================================
@@ -99,18 +99,24 @@ CSS = """
     color: #807d72;
 }
 
+
+
 /* HERO SECTION */
 
 .hero-section {
     padding-top: 128px;   /* pt-32 */
     padding-bottom: 80px;
-    padding-left: 32px;
+    # padding-left: 32px;
     padding-right: 32px;
 }
 
+
 .hero-inner {
-    max-width: 1516px;
+    max-width: 1728px;
     margin: 0 auto;
+    padding: 0 32px;
+    width: 100%;
+    padding-left: 0;
 }
 
 .hero-row {
@@ -126,7 +132,7 @@ CSS = """
     line-height: 1.1;
     letter-spacing: -0.055em;
     font-weight: 520;
-    color: #e5e2e3;
+    color: #e5e2e3 !important;
     max-width: 1000px;
     margin-bottom: 16px;
 }
@@ -134,8 +140,13 @@ CSS = """
 .hero-subtitle {
     font-family: Inter, sans-serif;
     font-size: 19px;
-    color: #9A9DA3;
+    color: #c6c5d8 !important;
     margin-bottom: 24px;
+}
+
+.hero-section,
+.hero-section * {
+    color: inherit;
 }
 
 .sidebar {
@@ -266,16 +277,38 @@ def initial_data_load():
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
 
     kpi_html = f"""
-    <div class="kpi-strip">
-        <div class="kpi"><div class="label">Spend</div><div class="value">£{spend:.2f}</div></div>
-        <div class="kpi"><div class="label">Leads</div><div class="value">{leads}</div></div>
-        <div class="kpi"><div class="label">Avg CPL</div><div class="value">£{cpl:.2f}</div></div>
-        <div class="kpi"><div class="label">Campaigns</div><div class="value">{count}</div></div>
+    <div class="hero-section">
+        <div class="hero-inner">
+
+            <div class="hero-title">
+                AI-powered Google Ads optimization
+            </div>
+
+            <div class="hero-subtitle">
+                Spend £{spend:.2f} | Leads {leads} | Avg CPL £{cpl:.2f} | Campaigns {count}
+            </div>
+
+        </div>
+    </div>
+    """
+
+    hero_content = f"""
+    <div class="hero-section">
+        <div class="hero-inner">
+
+            <div class="hero-title">
+                AI-powered Google Ads optimization
+            </div>
+
+            <div class="hero-subtitle">
+                Spend £{spend:.2f} | Leads {leads} | Avg CPL £{cpl:.2f} | Campaigns {count}
+            </div>
+
+        </div>
     </div>
     """
 
     return dfs, formatted_df, kpi_html
-
 
 # ==================================================
 # CAMPAIGN SELECT
@@ -284,18 +317,14 @@ def initial_data_load():
 def campaign_row_selected(df, full_state, evt: gr.SelectData):
     row_index = evt.index[0]
     campaign_name = df.iloc[row_index]["Campaign"]
-
     campaign_state = on_campaign_select(full_state, campaign_name)
-
     banner_html = f"""
     <div class="snapshot">
         <h3>📊 {campaign_name}</h3>
         <p>Campaign selected. AI insights are now available.</p>
     </div>
     """
-
     return campaign_state, banner_html
-
 
 # ==================================================
 # ADS ANALYST
@@ -318,16 +347,10 @@ def run_ads_card(state):
     except Exception as e:
         return f"⚠️ Analysis failed: {e}"
 
-
-# ==================================================
 # UI
-# ==================================================
-
 with gr.Blocks(css=CSS) as demo:
-
     full_state = gr.State()
     campaign_state = gr.State()
-
     # ---------------- HEADER ----------------
     gr.HTML("""
     <div id="advisor-header">
@@ -342,27 +365,7 @@ with gr.Blocks(css=CSS) as demo:
     </div>
     """)
 
-    gr.HTML("""
-        <div class="hero-section">
-            <div class="hero-inner">
-
-                <div class="hero-row">
-
-                    <div>
-                        <div class="hero-title">
-                            AI-powered Google Ads optimization
-                        </div>
-
-                        <div class="hero-subtitle">
-                             Spend £{spend:.2f} | Leads {leads} | Avg CPL £{cpl:.2f} | Campaigns {count}
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-        """)
+    kpi_html = gr.HTML()
 
     # ---------------- MAIN ----------------
     with gr.Row():
@@ -380,7 +383,7 @@ with gr.Blocks(css=CSS) as demo:
         with gr.Column(scale=3):
 
             # KPI STRIP
-            kpi_html = gr.HTML()
+            # kpi_html = gr.HTML()
 
             # SNAPSHOT
             campaign_banner = gr.HTML("""

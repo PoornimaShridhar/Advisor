@@ -484,6 +484,9 @@ footer,
 }
 
 .ai-button-card {
+    background: var(--custom-card-bg) !important;
+    border: 1px solid var(--custom-divider) !important;
+    border-radius: 8px !important;
     color: var(--on-surface) !important;
     text-align: left !important;
     font-size: 14px !important;
@@ -504,10 +507,11 @@ button.ai-button-card {
     justify-content: flex-start !important;
     text-align: left !important;
     white-space: pre-line !important;
-    background: transparent !important;
+    background: var(--custom-card-bg) !important;
     color: var(--on-surface) !important;
-    border: 0 !important;
-    box-shadow: none !important;
+    border: 1px solid var(--custom-divider) !important;
+    border-radius: 8px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
 .ai-button-card:hover {
@@ -566,6 +570,10 @@ button.ai-button-card {
     color: #ffffff !important;
 }
 
+.advisor-intel-title * {
+    color: #ffffff !important;
+}
+
 .advisor-intel-title .material-symbols-outlined {
     color: #ffffff !important;
     font-size: 20px;
@@ -584,12 +592,12 @@ button.ai-button-card {
 }
 
 .intel-label {
-    color: var(--custom-text-muted);
+    color: #c7c9d1 !important;
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    opacity: 0.5;
+    opacity: 1;
     margin-bottom: 12px;
 }
 
@@ -601,6 +609,10 @@ button.ai-button-card {
     color: #ffffff !important;
     font-size: 14px;
     line-height: 1.5;
+}
+
+.intel-box * {
+    color: #ffffff !important;
 }
 
 .text-primary {
@@ -684,6 +696,23 @@ def format_money(value):
         return "&pound;0.00"
 
 
+def format_number(value):
+    try:
+        return f"{float(value):,.0f}"
+    except (TypeError, ValueError):
+        return "0"
+
+
+def format_percent(value):
+    try:
+        numeric = float(value)
+        if abs(numeric) <= 1:
+            numeric *= 100
+        return f"{numeric:.2f}%"
+    except (TypeError, ValueError):
+        return "0.00%"
+
+
 def build_hero_html(spend, leads, cpl, count):
     return f"""
     <section class="hero-section">
@@ -736,6 +765,59 @@ def build_kpi_html(spend, leads, cpl, count):
             </div>
             <div class="kpi-value">{count}</div>
             <div class="kpi-note note-violet">Available for analysis</div>
+        </div>
+    </div>
+    """
+
+
+def build_campaign_kpi_html(campaign_df):
+    if campaign_df is None or campaign_df.empty:
+        return build_kpi_html(0, 0, 0, 0)
+
+    spend = campaign_df["cost"].sum() if "cost" in campaign_df else 0
+    clicks = campaign_df["clicks"].sum() if "clicks" in campaign_df else 0
+    conversions = campaign_df["conversions"].sum() if "conversions" in campaign_df else 0
+    cpl = spend / conversions if conversions else 0
+
+    if "ctr" in campaign_df:
+        ctr = campaign_df["ctr"].mean()
+    else:
+        impressions = campaign_df["impressions"].sum() if "impressions" in campaign_df else 0
+        ctr = clicks / impressions if impressions else 0
+
+    return f"""
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-label">Spend</div>
+                <div class="kpi-status">[CAMPAIGN]</div>
+            </div>
+            <div class="kpi-value">{format_money(spend)}</div>
+            <div class="kpi-note note-sky">Selected campaign spend</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-label">Clicks</div>
+                <div class="kpi-status">[TRAFFIC]</div>
+            </div>
+            <div class="kpi-value">{format_number(clicks)}</div>
+            <div class="kpi-note note-brown">Campaign traffic</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-label">CPL</div>
+                <div class="kpi-status">[EFFICIENCY]</div>
+            </div>
+            <div class="kpi-value">{format_money(cpl)}</div>
+            <div class="kpi-note note-olive">{format_number(conversions)} leads recorded</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-label">CTR</div>
+                <div class="kpi-status">[RESPONSE]</div>
+            </div>
+            <div class="kpi-value">{format_percent(ctr)}</div>
+            <div class="kpi-note note-violet">Click-through rate</div>
         </div>
     </div>
     """
@@ -843,9 +925,10 @@ def initial_data_load():
 
 def campaign_selected(campaign_name, full_state):
     if not campaign_name:
-        return None
+        return None, gr.update()
 
-    return on_campaign_select(full_state, campaign_name)
+    campaign_state = on_campaign_select(full_state, campaign_name)
+    return campaign_state, build_campaign_kpi_html(campaign_state.get("campaign_df"))
 
 
 # ==================================================
@@ -930,7 +1013,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
     campaign_picker.change(
         fn=campaign_selected,
         inputs=[campaign_picker, full_state],
-        outputs=[campaign_state],
+        outputs=[campaign_state, kpi_html],
     )
 
     ads_card.click(

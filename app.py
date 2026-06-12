@@ -106,7 +106,6 @@ CSS = """
 .hero-section {
     padding-top: 128px;   /* pt-32 */
     padding-bottom: 80px;
-    # padding-left: 32px;
     padding-right: 32px;
 }
 
@@ -116,7 +115,6 @@ CSS = """
     margin: 0 auto;
     padding: 0 32px;
     width: 100%;
-    padding-left: 0;
 }
 
 .hero-row {
@@ -140,7 +138,7 @@ CSS = """
 .hero-subtitle {
     font-family: Inter, sans-serif;
     font-size: 19px;
-    color: #c6c5d8 !important;
+    color: rgb(198, 197, 216) !important;
     margin-bottom: 24px;
 }
 
@@ -291,23 +289,6 @@ def initial_data_load():
         </div>
     </div>
     """
-
-    hero_content = f"""
-    <div class="hero-section">
-        <div class="hero-inner">
-
-            <div class="hero-title">
-                AI-powered Google Ads optimization
-            </div>
-
-            <div class="hero-subtitle">
-                Spend £{spend:.2f} | Leads {leads} | Avg CPL £{cpl:.2f} | Campaigns {count}
-            </div>
-
-        </div>
-    </div>
-    """
-
     return dfs, formatted_df, kpi_html
 
 # ==================================================

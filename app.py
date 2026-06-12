@@ -274,22 +274,45 @@ def initial_data_load():
 
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
 
+    campaigns = formatted_df["Campaign"].dropna().tolist()
+
+    campaign_items = []
+    for i, c in enumerate(campaigns):
+        active_class = "bg-white/[0.04] text-on-surface border border-white/[0.05]" if i == 0 else "text-custom-text-muted"
+
+        icon = "grid_view" if i == 0 else "sensors"
+
+        campaign_items.append(f"""
+        <div class="flex items-center gap-3 px-4 py-2 {active_class} rounded-lg cursor-pointer transition-colors group">
+            <span class="material-symbols-outlined text-[18px] opacity-40 group-hover:opacity-100">{icon}</span>
+            <span class="text-body-md">{c}</span>
+        </div>
+        """)
+
+    sidebar_html = f"""
+    <div class="text-[10px] text-custom-text-muted uppercase tracking-[0.2em] mb-6 px-4 opacity-40 font-bold">
+        Campaigns
+    </div>
+
+    <div class="flex flex-col gap-1">
+        {''.join(campaign_items)}
+    </div>
+    """
+
     kpi_html = f"""
     <div class="hero-section">
         <div class="hero-inner">
-
             <div class="hero-title">
                 AI-powered Google Ads optimization
             </div>
-
-            <div class="hero-subtitle">
+            <p class="hero-subtitle">
                 Spend £{spend:.2f} | Leads {leads} | Avg CPL £{cpl:.2f} | Campaigns {count}
-            </div>
-
+            </p>
         </div>
     </div>
     """
-    return dfs, formatted_df, kpi_html
+
+    return dfs, formatted_df, kpi_html, sidebar_html
 
 # ==================================================
 # CAMPAIGN SELECT
@@ -352,10 +375,11 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
     with gr.Row():
 
         # LEFT SIDEBAR
-        with gr.Column(scale=1, elem_classes=["sidebar"]):
-            gr.Markdown("### Campaigns")
+        with gr.Sidebar(position="left"):
+            campaign_list_html = gr.HTML()
 
             campaign_table = gr.Dataframe(
+                visible=False,
                 show_label=False,
                 interactive=True
             )
@@ -448,7 +472,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
 
     demo.load(
         fn=initial_data_load,
-        outputs=[full_state, campaign_table, kpi_html],
+        outputs=[full_state, campaign_table, kpi_html, campaign_list_html],
     )
 
     demo.load(fn=startup)

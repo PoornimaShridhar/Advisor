@@ -329,7 +329,7 @@ def run_ads_card(state):
         return f"⚠️ Analysis failed: {e}"
 
 # UI
-with gr.Blocks(css=CSS) as demo:
+with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
     full_state = gr.State()
     campaign_state = gr.State()
     # ---------------- HEADER ----------------
@@ -346,8 +346,7 @@ with gr.Blocks(css=CSS) as demo:
     </div>
     """)
 
-    with gr.Row(fill_width=True):
-        kpi_html = gr.HTML()
+    kpi_html = gr.HTML()
 
     # ---------------- MAIN ----------------
     with gr.Row():

@@ -346,7 +346,8 @@ with gr.Blocks(css=CSS) as demo:
     </div>
     """)
 
-    kpi_html = gr.HTML()
+    with gr.Row(fill_width=True):
+        kpi_html = gr.HTML()
 
     # ---------------- MAIN ----------------
     with gr.Row():

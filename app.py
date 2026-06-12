@@ -1,5 +1,3 @@
-import html
-
 import gradio as gr
 import spaces
 
@@ -216,13 +214,13 @@ footer,
 }
 
 .panel-label {
-    color: var(--custom-text-muted);
+    color: #ffffff !important;
     font-size: 10px;
     line-height: 1;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     font-weight: 700;
-    opacity: 0.5;
+    opacity: 1;
     margin: 0 0 24px;
     padding: 0 16px;
 }
@@ -473,14 +471,14 @@ footer,
     margin: 0 0 12px;
     padding-bottom: 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    color: var(--on-surface);
+    color: #ffffff !important;
     font-size: 14px;
     font-weight: 700;
 }
 
 .ai-card-html p {
     margin: 0;
-    color: var(--on-surface);
+    color: #ffffff !important;
     font-size: 14px;
     line-height: 1.5;
 }
@@ -565,10 +563,11 @@ button.ai-button-card {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     font-size: 14px;
     font-weight: 700;
+    color: #ffffff !important;
 }
 
 .advisor-intel-title .material-symbols-outlined {
-    color: var(--secondary);
+    color: #ffffff !important;
     font-size: 20px;
 }
 
@@ -599,18 +598,18 @@ button.ai-button-card {
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     padding: 16px;
-    color: var(--on-surface);
+    color: #ffffff !important;
     font-size: 14px;
     line-height: 1.5;
 }
 
 .text-primary {
-    color: var(--primary);
+    color: #ffffff !important;
     font-weight: 700;
 }
 
 .text-secondary {
-    color: var(--secondary);
+    color: #ffffff !important;
     font-weight: 600;
 }
 
@@ -844,22 +843,9 @@ def initial_data_load():
 
 def campaign_selected(campaign_name, full_state):
     if not campaign_name:
-        return None, """
-        <div class="snapshot">
-            <h3>Performance Snapshot</h3>
-            <p>Select a campaign to begin analysis.</p>
-        </div>
-        """
+        return None
 
-    campaign_state = on_campaign_select(full_state, campaign_name)
-    safe_campaign_name = html.escape(str(campaign_name))
-    banner_html = f"""
-    <div class="snapshot">
-        <h3>{safe_campaign_name}</h3>
-        <p>Campaign selected. AI insights are now available.</p>
-    </div>
-    """
-    return campaign_state, banner_html
+    return on_campaign_select(full_state, campaign_name)
 
 
 # ==================================================
@@ -920,13 +906,6 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
                 kpi_html = gr.HTML()
                 gr.HTML(SIGNAL_FLOW_HTML)
 
-                campaign_banner = gr.HTML("""
-                <div class="snapshot">
-                    <h3>Performance Snapshot</h3>
-                    <p>Select a campaign to begin analysis.</p>
-                </div>
-                """)
-
                 with gr.Row(elem_classes=["ai-row"]):
                     ads_card = gr.Button(
                         value="Ads Analyst\nCampaign insights.",
@@ -951,7 +930,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
     campaign_picker.change(
         fn=campaign_selected,
         inputs=[campaign_picker, full_state],
-        outputs=[campaign_state, campaign_banner],
+        outputs=[campaign_state],
     )
 
     ads_card.click(

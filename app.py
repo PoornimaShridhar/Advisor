@@ -1,11 +1,16 @@
+print("APP STARTED", flush=True)
+
 import gradio as gr
 import spaces
 
 from app.db.repo import init_db
+print("IMPORT 1 OK", flush=True)
 from app.controller.campaign_controller import on_campaign_select
+print("IMPORT 2 OK", flush=True)
 from app.controller.session_loader import load_google_ads_data
+print("IMPORT 3 OK", flush=True)
 from app.ads1.ads_analyst import run_ads_analyst_card
-
+print("IMPORT 4 OK", flush=True)
 
 # ==================================================
 # ROMER / ADVISOR DASHBOARD THEME

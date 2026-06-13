@@ -11,6 +11,7 @@ from app.controller.session_loader import load_google_ads_data
 print("IMPORT 3 OK", flush=True)
 from app.ads1.ads_analyst import run_ads_analyst_card
 print("IMPORT 4 OK", flush=True)
+from app.ads1.search_term_optimizer import run_search_term_optimizer
 
 # ==================================================
 # ROMER / ADVISOR DASHBOARD THEME
@@ -959,6 +960,23 @@ def run_ads_card(state):
 
     except Exception as e:
         return f"Analysis failed: {e}"
+    
+@spaces.GPU(duration=120)
+def run_search_term_optimizer_card(state):
+    try:
+        if not state:
+            return "Select a campaign first."
+
+        dfs = state.get("full_dfs")
+        campaign_name = state.get("campaign_name")
+
+        if dfs is None or campaign_name is None:
+            return "Campaign state is not properly initialized."
+
+        return run_search_term_optimizer(dfs, campaign_name=campaign_name)
+
+    except Exception as e:
+        return f"Search term optimization failed: {e}"
 
 
 # ==================================================
@@ -998,7 +1016,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
                 gr.HTML(SIGNAL_FLOW_HTML)
 
                 with gr.Row(elem_classes=["ai-row"]):
-                    ads_card = gr.Button(
+                    analyze_ads_card = gr.Button(
                         value="Ads Analyst\nCampaign insights.",
                         elem_classes=["ai-button-card"],
                     )
@@ -1006,7 +1024,10 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
                     gr.HTML(ai_card("Keyword Inspector", "Winning versus wasting keywords."))
 
                 with gr.Row(elem_classes=["ai-row"]):
-                    gr.HTML(ai_card("Search Term Cleaner", "Optimize search term list."))
+                    search_term_card = gr.Button(
+                        value="Search Term Cleaner\nOptimize search term list.",
+                        elem_classes=["ai-button-card"],
+                    )
                     gr.HTML(ai_card("Growth Finder", "Where to scale?"))
                     gr.HTML(ai_card("Campaign Doctor", "What limits performance?"))
 
@@ -1024,8 +1045,14 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
         outputs=[campaign_state, kpi_html],
     )
 
-    ads_card.click(
+    analyze_ads_card.click(
         fn=run_ads_card,
+        inputs=campaign_state,
+        outputs=ads_output,
+    )
+
+    search_term_card.click(
+        fn=run_search_term_optimizer_card,
         inputs=campaign_state,
         outputs=ads_output,
     )

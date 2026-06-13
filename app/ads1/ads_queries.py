@@ -48,9 +48,12 @@ WHERE segments.date DURING LAST_30_DAYS
 SEARCH_TERMS_QUERY = """
 SELECT
   search_term_view.search_term,
-  metrics.impressions,
+  campaign.name,
+  ad_group.name,
   metrics.clicks,
-  metrics.cost_micros
+  metrics.impressions,
+  metrics.cost_micros,
+  metrics.conversions
 FROM search_term_view
 WHERE segments.date DURING LAST_30_DAYS
 """

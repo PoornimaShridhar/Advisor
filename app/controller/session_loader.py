@@ -1,10 +1,22 @@
 import os
 import time
 import pickle
+
+# comment out belwo while hosting on hf
+# import tempfile
+
 import pandas as pd
 from app.ads1.fetch_ads_data import fetch_all_data, to_dataframes
+# from dotenv import load_dotenv
+# load_dotenv() 
 
+# uncomment belwo line for hf
 CACHE_FILE = "/tmp/google_ads_cache.pkl"
+
+# This dynamically picks /tmp on Linux/Mac and AppData\Local\Temp on Windows
+# CACHE_FILE = os.path.join(tempfile.gettempdir(), "google_ads_cache.pkl")
+# CACHE_TTL = 3600 
+
 CACHE_TTL = 3600  # Cache data for 1 hour (3600 seconds)
 
 def load_google_ads_data(force_refresh=False):

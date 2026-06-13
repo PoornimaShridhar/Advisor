@@ -1,7 +1,6 @@
 import pandas as pd
 from app.recs.generate import TARGET_CPL, generate_explanation, is_bad_llm_output
 
-
 def build_search_term_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
 
@@ -41,13 +40,10 @@ def detect_review_terms(df):
     ]
 
 def detect_scaling_terms(df):
-    return df[
-        (df["conversions"] > 0)
-    ].sort_values("cpa", ascending=True)
+    return df[(df["conversions"] > 0)].sort_values("cpa", ascending=True)
 
 def classify_search_term(dfs: dict) -> dict:
     df = dfs["search_terms"].copy()
-
     df = build_search_term_features(df)
 
     negatives = detect_negative_terms(df)
@@ -91,36 +87,16 @@ def build_search_optimizer_context(dfs: dict, campaign_name: str | None = None):
     }
 
 def run_search_term_optimizer(dfs: dict,campaign_name: str | None = None) -> str:
-    print(
-        "\n🚀 [search_term_card] STARTED",
-        flush=True
-    )
+    print("\n🚀 [search_term_card] STARTED", flush=True)
     if not dfs:
         return (
             "⚠️ No campaign data — "
             "select a campaign first."
         )
-    context = build_search_optimizer_context(
-        dfs,
-        campaign_name
-    )
-
+    context = build_search_optimizer_context(dfs,campaign_name)
     print("🧠 [search_term_card] context built",flush=True)
-
-    prompt = build_search_optimizer_prompt(
-        context
-    )
-
-    print(
-        "✍️ [search_term_card] prompt built",
-        flush=True
-    )
-
+    prompt = build_search_optimizer_prompt(context)
+    print("✍️ [search_term_card] prompt built",flush=True)
     result = generate_explanation(prompt)
-
-    print(
-        "📤 [search_term_card] result received",
-        flush=True
-    )
-
+    print("📤 [search_term_card] result received", flush=True)
     return result

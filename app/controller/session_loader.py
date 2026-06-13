@@ -7,6 +7,9 @@ import pickle
 
 import pandas as pd
 from app.ads1.fetch_ads_data import fetch_all_data, to_dataframes
+from app.ads1.merge import merge_dfs
+from app.ads1.sample_data import generate_sample_dfs
+
 # from dotenv import load_dotenv
 # load_dotenv() 
 
@@ -33,8 +36,11 @@ def load_google_ads_data(force_refresh=False):
                 return pickle.load(f)
 
     print("🌐 Disk cache expired or missing. Fetching live Google Ads data...")
-    raw = fetch_all_data(customer_id)
-    dfs = to_dataframes(raw)
+    real_raw = fetch_all_data(customer_id)
+    real_dfs = to_dataframes(real_raw)
+
+    sample_dfs = generate_sample_dfs()
+    dfs = merge_dfs(real_dfs, sample_dfs)
 
     # Save to disk cache safely
     with open(CACHE_FILE, "wb") as f:

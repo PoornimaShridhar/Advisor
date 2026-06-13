@@ -905,10 +905,13 @@ def ai_card(title, body):
 # ==================================================
 
 def initial_data_load():
+    print("STARTING DATA LOAD", flush=True)
     dfs = load_google_ads_data()
+    print("GOOGLE ADS DATA LOADED", flush=True)
     from app.ui.dashboard import get_dashboard_data
 
     spend, leads, cpl, count, formatted_df = get_dashboard_data()
+    print("DASHBOARD DATA LOADED", flush=True)
     campaign_choices = (
         formatted_df["Campaign"].dropna().astype(str).tolist()
         if "Campaign" in formatted_df.columns

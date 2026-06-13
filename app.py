@@ -12,6 +12,7 @@ print("IMPORT 3 OK", flush=True)
 from app.ads1.ads_analyst import run_ads_analyst_card
 print("IMPORT 4 OK", flush=True)
 from app.ads1.search_term_optimizer import run_search_term_optimizer
+from app.ads1.keyword_inspector import run_keyword_inspector
 
 # ==================================================
 # ROMER / ADVISOR DASHBOARD THEME
@@ -978,6 +979,22 @@ def run_search_term_optimizer_card(state):
     except Exception as e:
         return f"Search term optimization failed: {e}"
 
+@spaces.GPU(duration=120)
+def run_keyword_inspector_card(state):
+    try:
+        if not state:
+            return "Select a campaign first."
+
+        dfs = state.get("full_dfs")
+        campaign_name = state.get("campaign_name")
+
+        if dfs is None or campaign_name is None:
+            return "Campaign state is not properly initialized."
+
+        return run_keyword_inspector(dfs, campaign_name=campaign_name)
+
+    except Exception as e:
+        return f"Search term optimization failed: {e}"
 
 # ==================================================
 # UI
@@ -1021,7 +1038,10 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
                         elem_classes=["ai-button-card"],
                     )
                     gr.HTML(ai_card("Budget Optimizer", "Where to adjust spend?"))
-                    gr.HTML(ai_card("Keyword Inspector", "Winning versus wasting keywords."))
+                    keyword_inspector_card = gr.Button(
+                        value="Keyword Inspector\n <hr> Winning versus wasting keywords..",
+                        elem_classes=["ai-button-card"],
+                    )
 
                 with gr.Row(elem_classes=["ai-row"]):
                     search_term_card = gr.Button(
@@ -1053,6 +1073,12 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
 
     search_term_card.click(
         fn=run_search_term_optimizer_card,
+        inputs=campaign_state,
+        outputs=ads_output,
+    )
+
+    keyword_inspector_card.click(
+        fn=run_keyword_inspector_card,
         inputs=campaign_state,
         outputs=ads_output,
     )

@@ -43,20 +43,6 @@ def detect_review_terms(df):
 def detect_scaling_terms(df):
     return df[(df["conversions"] > 0)].sort_values("cpa", ascending=True)
 
-# def classify_search_term(dfs: dict) -> dict:
-#     df = dfs["search_terms"].copy()
-#     df = build_search_term_features(df)
-
-#     negatives = detect_negative_terms(df)
-#     review = detect_review_terms(df)
-#     winners = detect_scaling_terms(df)
-
-#     return {
-#         "negative_keywords": negatives.to_dict("records"),
-#         "review_terms": review.to_dict("records"),
-#         "winning_terms": winners.head(10).to_dict("records"),
-#     }
-
 def build_search_optimizer_prompt(context: dict) -> str:
     # Convert data to clean JSON string strings for better LLM readability
     neg_json = json.dumps(context['negative_keywords'], indent=2)

@@ -28,24 +28,11 @@ def build_keyword_prompt(context: dict) -> str:
     payload = json.dumps(context, indent=2, default=str)
 
     return f"""
-        You are a Google Ads keyword performance expert for preschool campaigns.
-
-        TASK:
-        Classify keywords into 3–5 insights.
-
-        STRICT RULES:
-        - Do NOT invent ad groups or missing fields.
-        - Only use given keyword metrics.
-        - No paragraphs. Only bullet format.
-
-        OUTPUT FORMAT:
-        - Keyword: <name>
-        Label: Winning | Wasted Spend | Scale | Reduce | Investigate
-        Evidence: <CTR, cost, conversions>
-        Action: <specific bid or pause action>
-
-        DATA:
-        {payload}
+        Write 3 to 5 bullet points of actionable keyword performance insights.\n"
+        "Analyze individual keywords from the data and classify them as winning, 
+        wasted spend, or scaling opportunities using CTR, cost, and conversions. Add reasoning.
+        "Use simple language. One insight per bullet. Start each line with '- '. No intro sentence.\n\n"
+        f"Data (JSON):\n{payload}"
         """
 # -------------------------
 # Main runner

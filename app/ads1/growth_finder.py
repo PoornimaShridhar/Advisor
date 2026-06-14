@@ -41,25 +41,10 @@ def build_growth_finder_prompt(context: dict) -> str:
     name = context.get("campaign_name", "this account")
 
     return (
-        f"""
-            You are a Google Ads growth strategist.
-
-            TASK:
-            Identify ONLY data-backed scaling opportunities.
-
-            STRICT RULES:
-            - If performance is weak, DO NOT suggest scaling.
-            - Do not infer missing ad groups or structures.
-            - No generic marketing theory.
-
-            OUTPUT FORMAT:
-            - Opportunity: <keyword / segment>
-            Evidence: <CTR, conversions, CPA>
-            Why it works: <short justification>
-            Action: <scale suggestion (budget / bids / match type expansion)>
-
-            DATA:
-            {payload}
+            f"""
+                Identify ONLY data-backed scaling opportunities.Suggest opportunities for growth, with evidence and action.
+                DATA:
+                {payload}
             """
     )
 

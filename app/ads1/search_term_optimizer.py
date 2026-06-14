@@ -45,15 +45,7 @@ def build_search_optimizer_prompt(context: dict) -> str:
 
     return (
         f"""
-            You are a search term optimization specialist.
-
-            TASK:
-            Return 3–5 search term actions.
-
-            STRICT RULES:
-            - Only use provided search terms.
-            - Do not compare unrelated terms.
-            - No explanations longer than 1 sentence per bullet.
+            Return 3–5 search term actions for given campaign data.
 
             OUTPUT FORMAT:
             - Search Term: <term>

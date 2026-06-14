@@ -1188,7 +1188,7 @@ def campaign_selected(campaign_name, full_state):
 # ADS ANALYST
 # ==================================================
 
-# @spaces.GPU(duration=120)
+@spaces.GPU(duration=120)
 def run_ads_card(state):
     try:
         if not state:

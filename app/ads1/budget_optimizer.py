@@ -40,43 +40,11 @@ def build_budget_optimizer_prompt(context: dict) -> str:
     payload = json.dumps(context, indent=2, default=str)
     name = context.get("campaign_name", "this account")
 
-    return f"""
-        You are a senior Google Ads budget optimization strategist.
-
-        Your job is to identify how to reallocate budget to improve overall performance.
-
-        Campaign scope: {name}
-
-        You must analyze the data and decide:
-
-        - Where money is being wasted
-        - Which campaigns deserve MORE budget
-        - Which campaigns should be reduced or paused
-        - Any inefficient spend patterns
-        - Any hidden high-efficiency opportunities
-
-        IMPORTANT:
-        - Do NOT rely on hard thresholds
-        - Do NOT assume rules like "CPA > X = bad"
-        - Think in relative performance vs distribution
-        - Focus on efficiency vs cost imbalance
-
-        OUTPUT FORMAT:
-        Return 3 to 5 bullet points.
-
-        Each bullet must:
-        - start with "- "
-        - include a clear recommendation
-        - include reasoning based on metrics
-
-        Example style:
-        - "Shift budget from X to Y because..."
-        - "Reduce spend on Z due to..."
-        - "Increase allocation to A since..."
-
-        DATA:
-        {payload}
-        """
+    return (
+        f"Write 3 to 5 bullet points of actionable Google Ads budget allocation insights for {name}.\n"
+        "Use simple language. One insight per bullet. Start each line with '- '. No intro sentence.\n\n"
+        f"Data (JSON):\n{payload}"
+    )
 
 def run_budget_optimizer(dfs: dict, campaign_name: str | None = None) -> str:
     print("\n🚀 [budget_optimizer] STARTED", flush=True)

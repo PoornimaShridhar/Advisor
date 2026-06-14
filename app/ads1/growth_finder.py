@@ -41,16 +41,26 @@ def build_growth_finder_prompt(context: dict) -> str:
     name = context.get("campaign_name", "this account")
 
     return (
-        f"Write 3 to 5 bullet points of actionable Google Ads scaling opportunities for {name}.\n"
-        "Use simple language. One insight per bullet. Start each line with '- '. No intro sentence.\n\n"
-        "Focus on:\n"
-        "- keywords/ad groups that can scale budget profitably\n"
-        "- patterns that show strong conversion efficiency\n"
-        "- underfunded high-performing segments\n"
-        "- expansion opportunities (similar keywords, match types, themes)\n"
-        "- signals of demand that are not fully exploited\n\n"
-        "- Only suggest scaling where performance supports it\n"
-        f"Data (JSON):\n{payload}"
+        f"""
+            You are a Google Ads growth strategist.
+
+            TASK:
+            Identify ONLY data-backed scaling opportunities.
+
+            STRICT RULES:
+            - If performance is weak, DO NOT suggest scaling.
+            - Do not infer missing ad groups or structures.
+            - No generic marketing theory.
+
+            OUTPUT FORMAT:
+            - Opportunity: <keyword / segment>
+            Evidence: <CTR, conversions, CPA>
+            Why it works: <short justification>
+            Action: <scale suggestion (budget / bids / match type expansion)>
+
+            DATA:
+            {payload}
+            """
     )
 
 def run_growth_finder(dfs: dict, campaign_name: str | None = None) -> str:

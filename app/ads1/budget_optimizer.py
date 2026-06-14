@@ -41,10 +41,28 @@ def build_budget_optimizer_prompt(context: dict) -> str:
     name = context.get("campaign_name", "this account")
 
     return (
-        f"Write 3 to 5 bullet points of actionable Google Ads budget allocation insights for {name}.\n"
-        "Use simple language. One insight per bullet. Start each line with '- '. No intro sentence.\n\n"
-        f"Data (JSON):\n{payload}"
-    )
+        f"""
+        You are a Google Ads budget optimizer.
+
+        TASK:
+        Identify 3–5 budget allocation actions for the campaign {name}.
+
+        STRICT RULES:
+        - Use only provided data.
+        - Do not explain categories (no "keywords/ad groups...")
+        - No repetition of headings or prompt structure.
+        - Avoid generic advice.
+
+        OUTPUT FORMAT:
+        - Action: <what to change in budget>
+        Evidence: <metrics>
+        Expected impact: <why it helps>
+
+        DATA:
+        {payload}
+        """
+        )
+    
 
 def run_budget_optimizer(dfs: dict, campaign_name: str | None = None) -> str:
     print("\n🚀 [budget_optimizer] STARTED", flush=True)

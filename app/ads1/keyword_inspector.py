@@ -28,32 +28,25 @@ def build_keyword_prompt(context: dict) -> str:
     payload = json.dumps(context, indent=2, default=str)
 
     return f"""
-You are an expert Google Ads performance strategist for a preschool business.
+        You are a Google Ads keyword performance expert for preschool campaigns.
 
-Campaign: {context.get("campaign_name", "ALL CAMPAIGNS")}
+        TASK:
+        Classify keywords into 3–5 insights.
 
-Your job:
-Analyze keyword performance and identify:
-- Winning keywords (high intent + conversions)
-- Wasted spend keywords (cost but no conversions)
-- Keywords to scale
-- Keywords to pause or reduce bids
-- Any CTR / conversion anomalies
+        STRICT RULES:
+        - Do NOT invent ad groups or missing fields.
+        - Only use given keyword metrics.
+        - No paragraphs. Only bullet format.
 
-IMPORTANT:
-- Do NOT assume CRM / SaaS context
-- Assume all data relates to preschool admissions, daycare, or childcare services
-- Think like a preschool marketing expert
+        OUTPUT FORMAT:
+        - Keyword: <name>
+        Label: Winning | Wasted Spend | Scale | Reduce | Investigate
+        Evidence: <CTR, cost, conversions>
+        Action: <specific bid or pause action>
 
-DATA:
-{payload}
-
-Return 5 bullet points.
-Each bullet must start with "- ".
-Be direct, business-focused, no intro text.
-"""
-
-
+        DATA:
+        {payload}
+        """
 # -------------------------
 # Main runner
 # -------------------------

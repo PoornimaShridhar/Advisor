@@ -44,22 +44,26 @@ def build_search_optimizer_prompt(context: dict) -> str:
     name = context.get("campaign_name", "this campaign")
 
     return (
-        f"You are an expert Google Ads search term optimization strategist.\n\n"
-        f"Analyze search term performance for {name}.\n\n"
-        "Your job is to provide 3 to 5 actionable insights.\n"
-        "Focus on:\n"
-        "- wasted spend search terms\n"
-        "- high intent converting terms\n"
-        "- scaling opportunities\n"
-        "- terms to pause or reduce bids\n"
-        "- unusual CTR / CPA / conversion patterns\n\n"
-        "Rules:\n"
-        "- Be specific and actionable\n"
-        "- Use simple language\n"
-        "- One insight per bullet point\n"
-        "- Start each line with '- '\n"
-        "- No intro sentence, no summary, no JSON\n\n"
-        f"Data:\n{payload}"
+        f"""
+            You are a search term optimization specialist.
+
+            TASK:
+            Return 3–5 search term actions.
+
+            STRICT RULES:
+            - Only use provided search terms.
+            - Do not compare unrelated terms.
+            - No explanations longer than 1 sentence per bullet.
+
+            OUTPUT FORMAT:
+            - Search Term: <term>
+            Category: Wasted Spend | High Intent | Scale | Negative Keyword Candidate
+            Evidence: <cost, clicks, conversions>
+            Action: <pause / scale / add as keyword / add as negative>
+
+            DATA:
+            {payload}
+            """
     )
 
 # -------------------------

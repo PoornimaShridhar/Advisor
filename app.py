@@ -106,7 +106,7 @@ footer,
 #advisor-header .avatar {
     width: 32px;
     height: 32px;
-    border-radius: 999px;
+    border-radius: 8px;
     border: 1px solid var(--custom-text-muted);
     display: flex;
     align-items: center;
@@ -412,7 +412,7 @@ footer,
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: rgba(229, 226, 227, 0.6);
+    color: #ffffff !important;
 }
 
 .signal-box {
@@ -1054,8 +1054,8 @@ def build_signal_flow_html(dfs=None):
                 <path d="{line_path}" fill="none" filter="url(#glow-daily)" stroke="#5E6BFF" stroke-linecap="round" stroke-width="1.2"></path>
                 {dots_html}
             </svg>
-            <div style="position: absolute; bottom: 6px; right: 10px; color: rgba(154,157,163,0.4); font-size: 10px; font-weight: 500;">Last 14 days</div>
-            <div style="position: absolute; top: 6px; left: 10px; color: rgba(154,157,163,0.4); font-size: 10px; font-weight: 500;">Daily Clicks (Last 14 Days)</div>
+            <div style="position: absolute; bottom: 6px; right: 10px; color: #ffffff !important; font-size: 10px; font-weight: 500;">Last 14 days</div>
+            <div style="position: absolute; top: 6px; left: 10px; color: #ffffff !important; font-size: 10px; font-weight: 500;">Daily Clicks (Last 14 Days)</div>
         </div>
     </div>
     """
@@ -1188,7 +1188,7 @@ def campaign_selected(campaign_name, full_state):
 # ADS ANALYST
 # ==================================================
 
-@spaces.GPU(duration=120)
+# @spaces.GPU(duration=120)
 def run_ads_card(state):
     try:
         if not state:

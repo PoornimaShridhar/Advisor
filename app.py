@@ -1161,7 +1161,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
     )
 
     budget_optimizer_card.click(
-        fn=run_ads_card,
+        fn=run_budget_card,
         inputs=campaign_state,
         outputs=ads_output,
     )

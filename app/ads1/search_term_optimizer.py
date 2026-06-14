@@ -58,6 +58,19 @@ def build_search_optimizer_prompt(context: dict) -> str:
             """
     )
 
+
+def build_search_optimizer_prompt(context: dict) -> str:
+    payload = json.dumps(context, indent=2, default=str)
+    name = context.get("campaign_name", "this campaign")
+
+    return (
+        f"Write 3 to 5 bullet points of actionable search term cleanup insights for {name}.\n"
+        "Identify terms to pause, add as negatives, add as keywords, scale, or investigate using cost, clicks, conversions, CPA, and CVR.\n"
+        "Use simple language. One search term action per bullet. Start each line with '- '. No intro sentence.\n\n"
+        f"Data (JSON):\n{payload}"
+    )
+
+
 # -------------------------
 # Context builder (FULL DATA approach)
 # -------------------------

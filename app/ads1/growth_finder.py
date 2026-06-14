@@ -41,11 +41,11 @@ def build_growth_finder_prompt(context: dict) -> str:
     name = context.get("campaign_name", "this account")
 
     return (
-            f"""
-                Identify ONLY data-backed scaling opportunities.Suggest opportunities for growth, with evidence and action.
-                DATA:
-                {payload}
-            """
+        f"Write 3 to 5 bullet points of actionable growth opportunities for {name}.\n"
+        "Suggest only ways to grow: scale winning keywords, expand high-converting themes, increase budget on efficient areas, or test related intent.\n"
+        "Use CTR, CVR, conversions, CPA, and efficiency score as evidence. Do not give general ad analysis.\n"
+        "Use simple language. One growth opportunity per bullet. Start each line with '- '. No intro sentence.\n\n"
+        f"Data (JSON):\n{payload}"
     )
 
 def run_growth_finder(dfs: dict, campaign_name: str | None = None) -> str:

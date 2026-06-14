@@ -2,6 +2,7 @@ print("APP STARTED", flush=True)
 
 import html
 import gradio as gr
+import pandas as pd
 import spaces
 
 from app.db.repo import init_db
@@ -937,6 +938,132 @@ SIGNAL_FLOW_HTML = """
 """
 
 
+def build_signal_flow_html(dfs=None):
+    if not dfs or "hourly" not in dfs or dfs["hourly"] is None or dfs["hourly"].empty:
+        return """
+        <div class="signal-card">
+            <div class="signal-header">
+                <div>
+                    <span class="signal-title">Traffic Trend</span>
+                    <span class="kpi-status"> [WAITING]</span>
+                </div>
+            </div>
+            <div class="signal-box" style="display:flex;align-items:center;justify-content:center;color:var(--custom-text-muted);font-size:14px;">
+                Waiting for Google Ads API data streaming...
+            </div>
+        </div>
+        """
+
+    hourly_df = dfs["hourly"].copy()
+    required_columns = {"date", "clicks", "cost"}
+    if not required_columns.issubset(hourly_df.columns):
+        return """
+        <div class="signal-card">
+            <div class="signal-header">
+                <div>
+                    <span class="signal-title">Traffic Trend</span>
+                    <span class="kpi-status"> [DATA CHECK]</span>
+                </div>
+            </div>
+            <div class="signal-box" style="display:flex;align-items:center;justify-content:center;color:var(--custom-text-muted);font-size:14px;">
+                Hourly data is missing date, clicks, or cost columns.
+            </div>
+        </div>
+        """
+
+    hourly_df["date"] = pd.to_datetime(hourly_df["date"], errors="coerce").dt.date
+    hourly_df["clicks"] = pd.to_numeric(hourly_df["clicks"], errors="coerce").fillna(0)
+    hourly_df["cost"] = pd.to_numeric(hourly_df["cost"], errors="coerce").fillna(0)
+    hourly_df = hourly_df.dropna(subset=["date"])
+
+    df_daily = (
+        hourly_df.groupby("date", as_index=False)
+        .agg({"clicks": "sum", "cost": "sum"})
+        .sort_values("date")
+        .tail(14)
+        .reset_index(drop=True)
+    )
+
+    if df_daily.empty:
+        return build_signal_flow_html(None)
+
+    total_days = len(df_daily)
+    total_clicks = int(df_daily["clicks"].sum())
+    total_cost = float(df_daily["cost"].sum())
+
+    if (
+        "campaigns" in dfs
+        and dfs["campaigns"] is not None
+        and not dfs["campaigns"].empty
+        and "conversions" in dfs["campaigns"].columns
+    ):
+        total_tours = int(dfs["campaigns"]["conversions"].fillna(0).sum())
+    else:
+        total_tours = int(total_clicks * 0.06)
+
+    max_clicks = df_daily["clicks"].max()
+    max_clicks = max_clicks if max_clicks > 0 else 1
+
+    points = []
+    for idx, row in df_daily.iterrows():
+        x = (idx / (total_days - 1)) * 100 if total_days > 1 else 50
+        y = 100 - ((row["clicks"] / max_clicks) * 75 + 15)
+        points.append((x, y))
+
+    line_path = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in points)
+    first_x = points[0][0]
+    last_x = points[-1][0]
+    area_path = f"{line_path} L {last_x:.1f},100 L {first_x:.1f},100 Z"
+
+    peak_idx = int(df_daily["clicks"].idxmax())
+    dot_indices = sorted({0, peak_idx, total_days - 1})
+    dots_html = "".join(
+        f'<circle cx="{points[i][0]:.1f}" cy="{points[i][1]:.1f}" fill="#5E6BFF" r="1.8" stroke="white" stroke-width="0.6"></circle>'
+        for i in dot_indices
+        if i < len(points)
+    )
+
+    return f"""
+    <div class="signal-card">
+        <div class="signal-header">
+            <div>
+                <span class="signal-title">Traffic Trend</span>
+                <span class="kpi-status"></span>
+            </div>
+            <div class="kpi-status">
+                <span style="color: var(--primary);">{format_number(total_clicks)} Clicks</span>
+                <span style="margin-left: 16px; color: var(--secondary);">{format_number(total_tours)} Tours Booked</span>
+                <span style="margin-left: 16px; color: var(--custom-text-muted);">{format_money(total_cost)} Spent</span>
+            </div>
+        </div>
+        <div class="signal-box">
+            <div class="grid-lines"><span></span><span></span><span></span><span></span></div>
+            <div class="vertical-lines"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <svg preserveAspectRatio="none" viewBox="0 0 100 100">
+                <defs>
+                    <linearGradient id="gradient-flow-daily" x1="0%" x2="0%" y1="0%" y2="100%">
+                        <stop offset="0%" stop-color="#5E6BFF" stop-opacity="0.25"></stop>
+                        <stop offset="100%" stop-color="#5E6BFF" stop-opacity="0"></stop>
+                    </linearGradient>
+                    <filter height="140%" id="glow-daily" width="140%" x="-20%" y="-20%">
+                        <feGaussianBlur result="blur" stdDeviation="1"></feGaussianBlur>
+                        <feComposite in="SourceGraphic" in2="blur" operator="over"></feComposite>
+                    </filter>
+                </defs>
+                <path d="{area_path}" fill="url(#gradient-flow-daily)"></path>
+                <path d="{line_path}" fill="none" filter="url(#glow-daily)" stroke="#5E6BFF" stroke-linecap="round" stroke-width="1.2"></path>
+                {dots_html}
+            </svg>
+            <div style="position: absolute; bottom: 6px; right: 10px; color: rgba(154,157,163,0.4); font-size: 10px; font-weight: 500;">Last 14 days</div>
+            <div style="position: absolute; top: 6px; left: 10px; color: rgba(154,157,163,0.4); font-size: 10px; font-weight: 500;">Daily Clicks (Last 14 Days)</div>
+        </div>
+    </div>
+    """
+
+
+SIGNAL_FLOW_HTML = build_signal_flow_html()
+
+
 def build_right_panel_html(doctor_result=None):
     doctor_result = doctor_result or {}
 
@@ -1029,12 +1156,17 @@ def initial_data_load():
     hero_html = build_hero_html(spend, leads, cpl, count)
     kpi_html = build_kpi_html(spend, leads, cpl, count)
     try:
+        signal_flow_html = build_signal_flow_html(dfs)
+    except Exception as e:
+        print(f"SIGNAL FLOW CHART FAILED: {e}", flush=True)
+        signal_flow_html = build_signal_flow_html()
+    try:
         doctor_result = run_campaign_doctor(dfs)
     except Exception as e:
         print(f"CAMPAIGN DOCTOR FAILED: {e}", flush=True)
         doctor_result = None
     right_panel_html = build_right_panel_html(doctor_result)
-    return dfs, gr.update(choices=campaign_choices, value=None), hero_html, kpi_html, right_panel_html
+    return dfs, gr.update(choices=campaign_choices, value=None), hero_html, kpi_html, signal_flow_html, right_panel_html
 
 
 # ==================================================
@@ -1175,7 +1307,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
 
             with gr.Column(scale=1, elem_classes=["center-workspace"]):
                 kpi_html = gr.HTML()
-                gr.HTML(SIGNAL_FLOW_HTML)
+                signal_flow_html = gr.HTML(SIGNAL_FLOW_HTML)
 
                 with gr.Row(elem_classes=["ai-row"]):
                     analyze_ads_card = gr.Button(
@@ -1247,7 +1379,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
 
     demo.load(
         fn=initial_data_load,
-        outputs=[full_state, campaign_picker, hero_html, kpi_html, right_panel_html],
+        outputs=[full_state, campaign_picker, hero_html, kpi_html, signal_flow_html, right_panel_html],
     )
 
     demo.load(fn=startup)

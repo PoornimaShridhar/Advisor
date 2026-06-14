@@ -13,6 +13,7 @@ from app.ads1.ads_analyst import run_ads_analyst_card
 print("IMPORT 4 OK", flush=True)
 from app.ads1.search_term_optimizer import run_search_term_optimizer
 from app.ads1.keyword_inspector import run_keyword_inspector
+from app.ads1.budget_optimizer import run_budget_optimizer
 
 # ==================================================
 # ROMER / ADVISOR DASHBOARD THEME
@@ -555,6 +556,11 @@ button.ads-analyst-card::before {
     content: "Campaign insights.";
 }
 
+.budget-optimizer-card button::before,
+button.budget-optimizer-card::before {
+    content: "Where to adjust spend?";
+}
+
 .keyword-inspector-card button::before,
 button.keyword-inspector-card::before {
     content: "Winning versus wasting keywords.";
@@ -1026,6 +1032,23 @@ def run_ads_card(state):
         return f"Analysis failed: {e}"
     
 @spaces.GPU(duration=120)
+def run_budget_card(state):
+    try:
+        if not state:
+            return "Select a campaign first."
+
+        dfs = state.get("full_dfs")
+        campaign_name = state.get("campaign_name")
+
+        if dfs is None or campaign_name is None:
+            return "Campaign state is not properly initialized."
+
+        return run_budget_optimizer(dfs, campaign_name=campaign_name)
+
+    except Exception as e:
+        return f"Analysis failed: {e}"
+    
+@spaces.GPU(duration=120)
 def run_search_term_optimizer_card(state):
     try:
         if not state:
@@ -1100,7 +1123,10 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
                         value="Ads Analyst",
                         elem_classes=["ai-button-card", "ads-analyst-card"],
                     )
-                    gr.HTML(ai_card("Budget Optimizer", "Where to adjust spend?"))
+                    budget_optimizer_card = gr.Button(
+                        value="Budget Optimizer",
+                        elem_classes=["ai-button-card", "budget-optimizer-card"],
+                    )
                     keyword_inspector_card = gr.Button(
                         value="Keyword Inspector",
                         elem_classes=["ai-button-card", "keyword-inspector-card"],
@@ -1129,6 +1155,12 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
     )
 
     analyze_ads_card.click(
+        fn=run_ads_card,
+        inputs=campaign_state,
+        outputs=ads_output,
+    )
+
+    budget_optimizer_card.click(
         fn=run_ads_card,
         inputs=campaign_state,
         outputs=ads_output,

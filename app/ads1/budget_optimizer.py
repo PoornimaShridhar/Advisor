@@ -28,12 +28,16 @@ def build_budget_optimizer_context(dfs: dict, campaign_name: str | None = None):
 
     df = build_budget_features(df)
 
-    # Keep top variance slice (NOT rule-based, just signal control)
-    df = df.sort_values("cost", ascending=False).head(200)
+    keep_cols = [
+        col
+        for col in ["name", "cost", "clicks", "impressions", "conversions", "ctr", "cpa", "cpc", "conv_per_cost"]
+        if col in df.columns
+    ]
+    df = df.sort_values(["conversions", "conv_per_cost", "cost"], ascending=[False, False, False]).head(15)
 
     return {
         "campaign_name": campaign_name,
-        "campaigns": df.to_dict("records")
+        "campaigns": df[keep_cols].round(2).to_dict("records")
     }
 
 def build_budget_optimizer_prompt(context: dict) -> str:
@@ -64,6 +68,43 @@ def build_budget_optimizer_prompt(context: dict) -> str:
         )
     
 
+def build_budget_optimizer_prompt(context: dict) -> str:
+    payload = json.dumps(context, indent=2, default=str)
+    name = context.get("campaign_name", "this account")
+
+    return (
+        f"Write 3 to 5 budget allocation recommendations for {name}.\n"
+        "Return only markdown bullets. Start every line with '- '.\n"
+        "Each bullet must follow this exact pattern:\n"
+        "- <budget action> — Evidence: <cost, conversions, CPA/CPC/CTR from data> — Expected impact: <short outcome>\n"
+        "Use only the supplied campaign metrics. Do not repeat the prompt or data. Do not invent missing campaigns.\n"
+        "If there is only one campaign, recommend within-campaign caution instead of cross-campaign reallocation.\n\n"
+        f"Data:\n{payload}"
+    )
+
+
+def rule_based_budget_actions(context: dict) -> str:
+    rows = context.get("campaigns", [])
+    if not rows:
+        return "- Hold budget — Evidence: no campaign rows available — Expected impact: prevents blind budget changes until data sync is fixed."
+
+    bullets = []
+    for row in rows[:5]:
+        name = row.get("name") or context.get("campaign_name") or "Selected campaign"
+        cost = row.get("cost", 0)
+        conversions = row.get("conversions", 0)
+        cpa = row.get("cpa", 0)
+        if conversions > 0:
+            bullets.append(
+                f"- Protect budget on {name} — Evidence: ${cost:.2f} cost, {conversions} conversions, ${cpa:.2f} CPA — Expected impact: keeps spend on proven demand."
+            )
+        else:
+            bullets.append(
+                f"- Cap budget on {name} — Evidence: ${cost:.2f} cost and 0 conversions — Expected impact: limits wasted spend while tracking or targeting is reviewed."
+            )
+    return "\n\n".join(bullets[:5])
+
+
 def run_budget_optimizer(dfs: dict, campaign_name: str | None = None) -> str:
     print("\n🚀 [budget_optimizer] STARTED", flush=True)
 
@@ -82,10 +123,7 @@ def run_budget_optimizer(dfs: dict, campaign_name: str | None = None) -> str:
 
     if is_bad_llm_output(result):
         print("⚠️ [budget_optimizer] fallback triggered", flush=True)
-        return (
-            "- Unable to generate budget recommendations right now.\n"
-            "- Try again or check campaign data quality."
-        )
+        return rule_based_budget_actions(context)
 
     print("📤 [budget_optimizer] result received", flush=True)
     return result

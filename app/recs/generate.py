@@ -18,9 +18,10 @@ _infer_lock = threading.Lock()
 
 _SYSTEM = (
     "You are a Google Ads analyst. "
-    "Reply with 3 to 5 markdown bullet points only. "
-    "Each bullet must be one short, actionable insight about the campaign data. "
-    "No introduction, no numbered lists, no step-by-step reasoning."
+    "Reply with markdown bullets only. "
+    "Each bullet must be one short, data-backed recommendation. "
+    "Do not repeat the prompt, do not explain your reasoning process, and do not invent missing fields. "
+    "Use only the evidence supplied by the user."
 )
 
 
@@ -44,6 +45,20 @@ def _looks_like_garbage(text: str) -> bool:
         return True
     lower = text.lower()
     if "return only" in lower or "no reasoning" in lower or "no explanation" in lower:
+        return True
+    echo_markers = [
+        "task:",
+        "strict rules:",
+        "output format:",
+        "focus on:",
+        "data:",
+        "we can calculate",
+        "i assume",
+        "actually,",
+        "however, the data",
+        "let's",
+    ]
+    if any(marker in lower for marker in echo_markers):
         return True
     if "google ads analyst" in lower and text.count("-") < 2:
         return True
@@ -107,7 +122,7 @@ def _message_text(message: dict) -> str:
 
 def _infer(llm, messages: list[dict[str, str]]) -> str:
     max_tokens = int(os.getenv("LLAMA_MAX_TOKENS", "384"))
-    temperature = float(os.getenv("LLAMA_TEMPERATURE", "0.35"))
+    temperature = float(os.getenv("LLAMA_TEMPERATURE", "0.15"))
 
     try:
         out = llm.create_chat_completion(

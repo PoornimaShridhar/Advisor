@@ -1,5 +1,6 @@
 print("APP STARTED", flush=True)
 
+import html
 import gradio as gr
 import spaces
 
@@ -936,7 +937,34 @@ SIGNAL_FLOW_HTML = """
 """
 
 
-RIGHT_PANEL_HTML = """
+def build_right_panel_html(doctor_result=None):
+    doctor_result = doctor_result or {}
+
+    def campaign_block(key, fallback_name, fallback_reason):
+        item = doctor_result.get(key) or {}
+        name = html.escape(str(item.get("name") or fallback_name))
+        reason = html.escape(str(item.get("reason") or fallback_reason))
+        return f'<span class="text-primary">{name}</span><br>{reason}'
+
+    best_html = campaign_block(
+    "best_campaign",
+    "Awaiting campaign data",
+    "Top performer will appear here after data loads.",
+    )
+
+    worst_html = campaign_block(
+        "budget_drain",
+        "Awaiting campaign data",
+        "Lowest-performing campaign will appear here.",
+    )
+
+    scale_html = campaign_block(
+        "scale_candidate",
+        "Awaiting campaign data",
+        "Best growth opportunity will appear here.",
+    )
+
+    return f"""
 <div class="advisor-intel-title">
     <div style="display:flex;align-items:center;gap:10px;">
         <span class="material-symbols-outlined">bolt</span>
@@ -945,24 +973,27 @@ RIGHT_PANEL_HTML = """
     <span class="pulse-dot"></span>
 </div>
 <div class="intel-section">
-    <div class="intel-label">Recommended Action</div>
+    <div class="intel-label">Best Campaign</div>
     <div class="intel-box">
-        Select a campaign, then run <span class="text-primary">Ads Analyst</span> to generate recommendations.
+        {best_html}
     </div>
 </div>
 <div class="intel-section">
-    <div class="intel-label">Signal Summary</div>
+    <div class="intel-label">Budget Drain</div>
     <div class="intel-box">
-        Campaign metrics are synced from your Google Ads data and prepared for AI analysis.
+        {worst_html}
     </div>
 </div>
 <div class="intel-section">
-    <div class="intel-label">Decision Log</div>
+    <div class="intel-label">Scalable Candidate</div>
     <div class="intel-box">
-        <span class="text-secondary">Ready</span> for campaign review.
+        {scale_html}
     </div>
 </div>
 """
+
+
+RIGHT_PANEL_HTML = build_right_panel_html()
 
 
 def ai_card(title, body, onclick=""):
@@ -997,7 +1028,13 @@ def initial_data_load():
     )
     hero_html = build_hero_html(spend, leads, cpl, count)
     kpi_html = build_kpi_html(spend, leads, cpl, count)
-    return dfs, gr.update(choices=campaign_choices, value=None), hero_html, kpi_html
+    try:
+        doctor_result = run_campaign_doctor(dfs)
+    except Exception as e:
+        print(f"CAMPAIGN DOCTOR FAILED: {e}", flush=True)
+        doctor_result = None
+    right_panel_html = build_right_panel_html(doctor_result)
+    return dfs, gr.update(choices=campaign_choices, value=None), hero_html, kpi_html, right_panel_html
 
 
 # ==================================================
@@ -1170,7 +1207,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
                 )
 
             with gr.Column(elem_classes=["right-panel"]):
-                gr.HTML(RIGHT_PANEL_HTML)
+                right_panel_html = gr.HTML(RIGHT_PANEL_HTML)
 
     campaign_picker.change(
         fn=campaign_selected,
@@ -1210,7 +1247,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
 
     demo.load(
         fn=initial_data_load,
-        outputs=[full_state, campaign_picker, hero_html, kpi_html],
+        outputs=[full_state, campaign_picker, hero_html, kpi_html, right_panel_html],
     )
 
     demo.load(fn=startup)

@@ -85,15 +85,15 @@ def run_campaign_doctor(dfs: dict) -> dict:
     result = {
         "best_campaign": {
             "name": best["name"],
-            "reason": "Strongest efficiency and conversion performance relative to spend"
+            "reason": "Most efficient converter"
         },
         "budget_drain": {
             "name": worst["name"],
-            "reason": "High spend with weak conversion output and poor return efficiency"
+            "reason": "Highest wasted spend"
         },
         "scale_candidate": {
             "name": scale["name"],
-            "reason": "High conversion efficiency suggests strong potential for scaling"
+            "reason": "Strong growth potential"
         }
     }
 

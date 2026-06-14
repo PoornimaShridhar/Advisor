@@ -41,7 +41,7 @@ def build_budget_optimizer_prompt(context: dict) -> str:
     name = context.get("campaign_name", "this account")
 
     return (
-        f"Write 3 to 5 bullet points of actionable Budget optimization insights for {name}.\n"
+        f"Write 3 to 5 bullet points of actionable Budget optimization methods for {name}.\n"
         "Use simple language. One insight per bullet. Start each line with '- '. No intro sentence.\n\n"
         f"Data (JSON):\n{payload}"
     )

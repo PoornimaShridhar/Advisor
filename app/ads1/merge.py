@@ -8,7 +8,7 @@ def merge_dfs(real_dfs: dict, sample_dfs: dict) -> dict:
 
     merged = {}
 
-    for key in real_dfs.keys():
+    for key in sorted(set(real_dfs.keys()) | set(sample_dfs.keys())):
         real_df = real_dfs.get(key)
         sample_df = sample_dfs.get(key)
 

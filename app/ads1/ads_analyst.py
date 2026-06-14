@@ -134,14 +134,9 @@ def build_ads_analyst_prompt(context: dict) -> str:
     payload = json.dumps(context, indent=2, default=str)
     name = context.get("campaign_name", "this campaign")
     return (
-        f"Write 3 to 5 executive Google Ads recommendations for {name}.\n"
-        "Return only markdown bullets. Start every line with '- '.\n"
-        "Each bullet must follow this exact pattern:\n"
-        "- <finding> — Evidence: <specific metric from data> — Action: <specific next step>\n"
-        "Do not restate the campaign name, raw data, prompt, task, or JSON keys.\n"
-        "Do not think aloud. Do not say what you can calculate. Do not invent causes.\n"
-        "If leads are 0, focus on conversion tracking, landing-page quality, and wasted spend risk.\n\n"
-        f"Data:\n{payload}"
+        f"Write 3 to 5 bullet points of actionable Google Ads insights for {name}.\n"
+        "Use simple language. One insight per bullet. Start each line with '- '. No intro sentence.\n\n"
+        f"Data (JSON):\n{payload}"
     )
 
 

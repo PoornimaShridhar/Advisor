@@ -28,19 +28,12 @@ def build_growth_finder_context(dfs: dict, campaign_name: str | None = None):
 
     df = build_growth_finder_features(df)
 
-    df = df[df["conversions"] > 0].sort_values(
-        ["efficiency_score", "conversions", "ctr"],
-        ascending=[False, False, False],
-    ).head(20)
-    keep_cols = [
-        col
-        for col in ["keyword", "cost", "clicks", "impressions", "conversions", "ctr", "cvr", "cpa", "efficiency_score"]
-        if col in df.columns
-    ]
+    # keep high-signal subset only (not rule-based, just signal control)
+    df = df.sort_values("cost", ascending=False).head(200)
 
     return {
         "campaign_name": campaign_name,
-        "keywords": df[keep_cols].round(2).to_dict("records")
+        "keywords": df.to_dict("records")
     }
 
 def build_growth_finder_prompt(context: dict) -> str:
@@ -48,32 +41,27 @@ def build_growth_finder_prompt(context: dict) -> str:
     name = context.get("campaign_name", "this account")
 
     return (
-        f"Write 3 to 5 data-backed scaling opportunities for {name}.\n"
-        "Return only markdown bullets. Start every line with '- '.\n"
-        "Each bullet must follow this exact pattern:\n"
-        "- Scale: '<keyword>' — Evidence: <conversions, CPA, CTR/CVR from data> — Action: <specific budget, bid, or match-type expansion>\n"
-        "Only recommend scaling when conversions are greater than 0. If no scalable rows exist, say '- No scaling candidate — Evidence: no converting keyword rows — Action: fix tracking or demand quality first.'\n"
-        "Use only supplied metrics. Do not infer ad groups. Do not repeat the prompt. Do not think aloud.\n\n"
-        f"Data:\n{payload}"
+        f"""
+            You are a Google Ads growth strategist.
+
+            TASK:
+            Identify ONLY data-backed scaling opportunities.
+
+            STRICT RULES:
+            - If performance is weak, DO NOT suggest scaling.
+            - Do not infer missing ad groups or structures.
+            - No generic marketing theory.
+
+            OUTPUT FORMAT:
+            - Opportunity: <keyword / segment>
+            Evidence: <CTR, conversions, CPA>
+            Why it works: <short justification>
+            Action: <scale suggestion (budget / bids / match type expansion)>
+
+            DATA:
+            {payload}
+            """
     )
-
-
-def rule_based_growth_actions(context: dict) -> str:
-    rows = context.get("keywords", [])
-    if not rows:
-        return "- No scaling candidate — Evidence: no converting keyword rows — Action: fix tracking or demand quality before increasing budget."
-
-    bullets = []
-    for row in rows[:5]:
-        keyword = row.get("keyword", "Unknown keyword")
-        conversions = row.get("conversions", 0)
-        cpa = row.get("cpa", 0)
-        ctr = row.get("ctr", 0)
-        bullets.append(
-            f"- Scale: '{keyword}' — Evidence: {conversions} conversions, ${cpa:.2f} CPA, {ctr:.2f}% CTR — Action: test a small bid or budget increase while monitoring CPA."
-        )
-    return "\n\n".join(bullets)
-
 
 def run_growth_finder(dfs: dict, campaign_name: str | None = None) -> str:
     print("\n🚀 [growth_finder] STARTED", flush=True)
@@ -93,7 +81,10 @@ def run_growth_finder(dfs: dict, campaign_name: str | None = None) -> str:
 
     if is_bad_llm_output(result):
         print("⚠️ [growth_finder] fallback triggered", flush=True)
-        return rule_based_growth_actions(context)
+        return (
+            "- Unable to generate scaling opportunities right now.\n"
+            "- Try again or check data quality."
+        )
 
     print("📤 [growth_finder] result received", flush=True)
     return result

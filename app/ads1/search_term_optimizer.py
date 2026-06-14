@@ -34,13 +34,7 @@ def prepare_context_df(df: pd.DataFrame, max_rows: int = 200) -> pd.DataFrame:
     Instead of semantic filtering, we just cap size for token control.
     Keeps high-variance distribution intact.
     """
-    converters = df[df["conversions"] > 0].sort_values(["conversions", "cpa"], ascending=[False, True]).head(12)
-    waste = df[df["conversions"] == 0].sort_values("cost", ascending=False).head(12)
-    high_intent = df[(df["conversions"] > 0) & (df["cvr"] > 0)].sort_values("cvr", ascending=False).head(8)
-    out = pd.concat([converters, waste, high_intent], ignore_index=True)
-    if "search_term" in out.columns:
-        out = out.drop_duplicates(subset=["search_term"])
-    return out.head(max_rows)
+    return df.sort_values("cost", ascending=False).head(max_rows)
 
 # -------------------------
 # Prompt (LLM owns all reasoning now)
@@ -72,22 +66,6 @@ def build_search_optimizer_prompt(context: dict) -> str:
             """
     )
 
-
-def build_search_optimizer_prompt(context: dict) -> str:
-    payload = json.dumps(context, indent=2, default=str)
-    name = context.get("campaign_name", "this campaign")
-
-    return (
-        f"Write 3 to 5 search term optimization actions for {name}.\n"
-        "Return only markdown bullets. Start every line with '- '.\n"
-        "Each bullet must follow this exact pattern:\n"
-        "- <Category>: '<search term>' — Evidence: <cost, clicks, conversions, CPA/CVR from data> — Action: <pause, reduce bid, add as keyword, or add as negative>\n"
-        "Allowed categories: Wasted Spend, High Intent, Scale, Negative Keyword Candidate, Investigate.\n"
-        "Use only supplied search terms. Do not explain calculations. Do not repeat the prompt. Do not think aloud.\n\n"
-        f"Data:\n{payload}"
-    )
-
-
 # -------------------------
 # Context builder (FULL DATA approach)
 # -------------------------
@@ -99,37 +77,11 @@ def build_search_optimizer_context(dfs: dict, campaign_name: str | None = None):
 
     df = build_search_term_features(df)
     df = prepare_context_df(df)
-    keep_cols = [
-        col
-        for col in ["search_term", "cost", "clicks", "impressions", "conversions", "ctr", "cvr", "cpc", "cpa"]
-        if col in df.columns
-    ]
 
     return {
         "campaign_name": campaign_name,
-        "search_terms": df[keep_cols].round(2).to_dict("records")
+        "search_terms": df.to_dict("records")  # FULL dataset context (bounded)
     }
-
-
-def rule_based_search_actions(context: dict) -> str:
-    bullets = []
-    for row in context.get("search_terms", []):
-        term = row.get("search_term", "Unknown term")
-        cost = row.get("cost", 0)
-        clicks = row.get("clicks", 0)
-        conversions = row.get("conversions", 0)
-        cvr = row.get("cvr", 0)
-        if conversions > 0:
-            bullets.append(
-                f"- High Intent: '{term}' — Evidence: {clicks} clicks, ${cost:.2f} cost, {conversions} conversions, {cvr:.2f}% CVR — Action: add as keyword and test higher bid."
-            )
-        elif cost > 0:
-            bullets.append(
-                f"- Wasted Spend: '{term}' — Evidence: {clicks} clicks, ${cost:.2f} cost, 0 conversions — Action: reduce bid or add as negative if intent is poor."
-            )
-        if len(bullets) >= 5:
-            break
-    return "\n\n".join(bullets) or "- Investigate: no search terms available — Evidence: no usable rows — Action: verify search term data sync."
 
 
 # -------------------------
@@ -153,7 +105,10 @@ def run_search_term_optimizer(dfs: dict, campaign_name: str | None = None) -> st
 
     if is_bad_llm_output(result):
         print("⚠️ [search_term_optimizer] LLM fallback triggered", flush=True)
-        return rule_based_search_actions(context)
+        return (
+            "- Unable to generate insights right now.\n"
+            "- Try again or check data quality."
+        )
 
     print("📤 [search_term_optimizer] result received", flush=True)
     return result

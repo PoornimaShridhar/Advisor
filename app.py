@@ -14,6 +14,8 @@ print("IMPORT 4 OK", flush=True)
 from app.ads1.search_term_optimizer import run_search_term_optimizer
 from app.ads1.keyword_inspector import run_keyword_inspector
 from app.ads1.budget_optimizer import run_budget_optimizer
+from app.ads1.growth_finder import run_growth_finder
+from app.ads1.campaign_doctor import run_campaign_doctor
 
 # ==================================================
 # ROMER / ADVISOR DASHBOARD THEME
@@ -1009,6 +1011,9 @@ def campaign_selected(campaign_name, full_state):
     campaign_state = on_campaign_select(full_state, campaign_name)
     return campaign_state, build_campaign_kpi_html(campaign_state.get("campaign_df"))
 
+# def load_campaign_doctor(dfs):
+#     result = run_campaign_doctor(dfs)
+#     return update_right_panel(result)
 
 # ==================================================
 # ADS ANALYST
@@ -1061,6 +1066,23 @@ def run_search_term_optimizer_card(state):
             return "Campaign state is not properly initialized."
 
         return run_search_term_optimizer(dfs, campaign_name=campaign_name)
+
+    except Exception as e:
+        return f"Search term optimization failed: {e}"
+    
+@spaces.GPU(duration=120)
+def run_growth_finder_card(state):
+    try:
+        if not state:
+            return "Select a campaign first."
+
+        dfs = state.get("full_dfs")
+        campaign_name = state.get("campaign_name")
+
+        if dfs is None or campaign_name is None:
+            return "Campaign state is not properly initialized."
+
+        return run_growth_finder(dfs, campaign_name=campaign_name)
 
     except Exception as e:
         return f"Search term optimization failed: {e}"
@@ -1137,9 +1159,11 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
                         value="Search Term Cleaner",
                         elem_classes=["ai-button-card", "search-term-cleaner-card"],
                     )
-                    gr.HTML(ai_card("Growth Finder", "Where to scale?"))
-                    gr.HTML(ai_card("Campaign Doctor", "What limits performance?"))
-
+                    growth_finder_card = gr.Button(
+                        value="Growth Finder",
+                        elem_classes=["ai-button-card", "growth-finder-card"],
+                    )
+                    
                 ads_output = gr.Markdown(
                     value="Select a campaign and click Ads Analyst.",
                     elem_id="ads-output",
@@ -1168,6 +1192,12 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
 
     search_term_cleaner_card.click(
         fn=run_search_term_optimizer_card,
+        inputs=campaign_state,
+        outputs=ads_output,
+    )
+
+    growth_finder_card.click(
+        fn=run_growth_finder_card,
         inputs=campaign_state,
         outputs=ads_output,
     )

@@ -502,6 +502,8 @@ footer,
     white-space: pre-line !important;
     margin: 0 !important;
     height: 116px !important;
+    position: relative !important;
+    overflow: hidden !important;
 }
 
 .ai-button-card button,
@@ -519,9 +521,66 @@ button.ai-button-card {
     border: 1px solid var(--custom-divider) !important;
     border-radius: 8px !important;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    line-height: 1.55 !important;
+    position: relative !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
 }
 
-.ai-button-card:hover {
+.ai-button-card button::after,
+button.ai-button-card::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    top: 48px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.ai-button-card button::before,
+button.ai-button-card::before {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    top: 64px;
+    color: #ffffff !important;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.ads-analyst-card button::before,
+button.ads-analyst-card::before {
+    content: "Campaign insights.";
+}
+
+.keyword-inspector-card button::before,
+button.keyword-inspector-card::before {
+    content: "Winning versus wasting keywords.";
+}
+
+.search-term-cleaner-card button::before,
+button.search-term-cleaner-card::before {
+    content: "Optimize search terms.";
+}
+
+.ai-button-card:hover,
+.ai-button-card:hover button,
+button.ai-button-card:hover {
+    border-color: rgba(94, 107, 255, 0.7) !important;
+    background: #141519 !important;
+    transform: translateY(-1px);
+}
+
+.clickable-card {
+    cursor: pointer;
+    transition: border-color 0.15s ease,
+                transform 0.15s ease,
+                background 0.15s ease;
+}
+
+.clickable-card:hover {
     border-color: rgba(94, 107, 255, 0.7) !important;
     background: #141519 !important;
     transform: translateY(-1px);
@@ -898,13 +957,17 @@ RIGHT_PANEL_HTML = """
 """
 
 
-def ai_card(title, body):
+def ai_card(title, body, onclick=""):
     return f"""
-    <div class="ai-card-html">
+    <div class="ai-card-html clickable-card" onclick="{onclick}">
         <h3>{title}</h3>
         <p>{body}</p>
     </div>
     """
+
+
+def ai_button_card(title, body):
+    return f"{title}\n{body}"
 
 
 # ==================================================
@@ -1034,19 +1097,19 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
 
                 with gr.Row(elem_classes=["ai-row"]):
                     analyze_ads_card = gr.Button(
-                        value="Ads Analyst\nCampaign insights.",
-                        elem_classes=["ai-button-card"],
+                        value="Ads Analyst",
+                        elem_classes=["ai-button-card", "ads-analyst-card"],
                     )
                     gr.HTML(ai_card("Budget Optimizer", "Where to adjust spend?"))
                     keyword_inspector_card = gr.Button(
-                        value="Keyword Inspector\n <hr> Winning versus wasting keywords..",
-                        elem_classes=["ai-button-card"],
+                        value="Keyword Inspector",
+                        elem_classes=["ai-button-card", "keyword-inspector-card"],
                     )
 
                 with gr.Row(elem_classes=["ai-row"]):
-                    search_term_card = gr.Button(
-                        value="Search Term Cleaner\nOptimize search term list.",
-                        elem_classes=["ai-button-card"],
+                    search_term_cleaner_card = gr.Button(
+                        value="Search Term Cleaner",
+                        elem_classes=["ai-button-card", "search-term-cleaner-card"],
                     )
                     gr.HTML(ai_card("Growth Finder", "Where to scale?"))
                     gr.HTML(ai_card("Campaign Doctor", "What limits performance?"))
@@ -1071,7 +1134,7 @@ with gr.Blocks(fill_height=True, fill_width=True, css=CSS) as demo:
         outputs=ads_output,
     )
 
-    search_term_card.click(
+    search_term_cleaner_card.click(
         fn=run_search_term_optimizer_card,
         inputs=campaign_state,
         outputs=ads_output,

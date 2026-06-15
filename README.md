@@ -39,6 +39,12 @@ The app combines live Google Ads data with sample demo data, then turns campaign
 
 For the demo, the data is a combination of actual Google Ads data and generated sample data. This keeps the product realistic while making the walkthrough safe and repeatable.
 
+## Demo Video
+
+Watch the demo video:
+
+<https://youtu.be/uMYFXE_YxhU>
+
 ## Social Post
 
 I shared a short post about this app here:

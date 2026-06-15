@@ -31,6 +31,12 @@ The app combines live Google Ads data with sample demo data, then turns campaign
 
 For the demo, the data is a combination of actual Google Ads data and generated sample data. This keeps the product realistic while making the walkthrough safe and repeatable.
 
+## Social Post
+
+I shared a short post about this app here:
+
+<https://www.linkedin.com/posts/poornima-sridhara_huggingface-gradio-ai-share-7472424316081704960-tv_v/?utm_source=share&utm_medium=member_desktop&rcm=ACoAABy6-yIBUw9eh7Soes0YOEPkNQYD7N6DMTo>
+
 ## Badge Notes
 
 Submitted for:

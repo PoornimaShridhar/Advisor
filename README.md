@@ -13,6 +13,14 @@ badges:
   - Off-Brand
   - Llama Champion
   - Field Notes
+tags:
+  - track:backyard
+  - sponsor:openbmb
+  - achievement:offgrid
+  - achievement:welltuned
+  - achievement:offbrand
+  - achievement:llama
+  - achievement:fieldnotes
 ---
 
 # Advisor

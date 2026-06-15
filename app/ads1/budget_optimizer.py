@@ -36,16 +36,16 @@ def build_budget_optimizer_context(dfs: dict, campaign_name: str | None = None):
     total_conversions = dfs["campaigns"]["conversions"].fillna(0).sum()
     account_cpa = dfs["campaigns"]["cost"].fillna(0).sum() / total_conversions if total_conversions else 0
 
-    def action_for(row):
+    def action_type_for(row):
         if row["conversions"] == 0:
-            return "Reduce or cap budget until conversion tracking and intent quality are fixed."
+            return "reduce"
         if account_cpa and row["cpa"] <= account_cpa * 0.8:
-            return "Increase budget cautiously because CPA is better than the account average."
+            return "increase"
         if account_cpa and row["cpa"] >= account_cpa * 1.25:
-            return "Reduce budget or tighten bids because CPA is worse than the account average."
-        return "Hold budget and monitor because efficiency is near the account average."
+            return "reduce"
+        return "hold"
 
-    df["budget_action"] = df.apply(action_for, axis=1)
+    df["budget_action"] = df.apply(action_type_for, axis=1)
     df["segment"] = "Campaign"
     df = df.sort_values(["conv_per_cost", "conversions"], ascending=[False, False]).head(8)
 
@@ -64,7 +64,7 @@ def build_budget_optimizer_context(dfs: dict, campaign_name: str | None = None):
             kw = build_budget_features(kw)
             kw["name"] = "Keyword: " + kw["keyword"].astype(str)
             kw["segment"] = "Keyword"
-            kw["budget_action"] = kw.apply(action_for, axis=1)
+            kw["budget_action"] = kw.apply(action_type_for, axis=1)
             kw = kw.sort_values(["conv_per_cost", "conversions", "cost"], ascending=[False, False, False]).head(6)
             kw_cols = [col for col in keep_cols if col in kw.columns]
             action_rows = pd.concat([action_rows, kw[kw_cols]], ignore_index=True)
@@ -81,10 +81,40 @@ def build_budget_optimizer_prompt(context: dict) -> str:
 
     return (
         f"Write 3 to 5 bullet points of actionable budget optimization insights for {name}.\n"
-        "Use the budget_actions list only. Say where to increase, reduce, hold, or protect budget using cost, conversions, CPA, CPC, and conversion efficiency.\n"
-        "Use simple language. One clear budget action per bullet. Start each line with '- '. No intro sentence.\n\n"
+        "Use the budget_actions list only. Each bullet must mention the campaign or keyword name, the budget action, and the evidence.\n"
+        "Use simple language. One self-contained budget action per bullet. Start each line with '- '. No intro sentence. Do not quote JSON values by themselves.\n\n"
         f"Data (JSON):\n{payload}"
     )
+
+
+def rule_based_budget_actions(context: dict) -> str:
+    rows = context.get("budget_actions", [])
+    if not rows:
+        return "- Hold budget for this campaign because no usable budget rows were found; verify campaign and keyword data before changing spend."
+
+    bullets = []
+    for row in rows[:5]:
+        name = row.get("name", "this segment")
+        action = row.get("budget_action", "hold")
+        cost = row.get("cost", 0)
+        conversions = row.get("conversions", 0)
+        cpa = row.get("cpa", 0)
+        cpc = row.get("cpc", 0)
+        conv_per_cost = row.get("conv_per_cost", 0)
+
+        if action == "increase":
+            bullets.append(
+                f"- Increase budget cautiously on {name} because it has {conversions} conversions at CPA {cpa:.2f}, CPC {cpc:.2f}, and conversion efficiency {conv_per_cost:.3f} on {cost:.2f} spend."
+            )
+        elif action == "reduce":
+            bullets.append(
+                f"- Reduce or cap budget on {name} because it has {conversions} conversions at CPA {cpa:.2f} after {cost:.2f} spend, making it a weaker use of budget."
+            )
+        else:
+            bullets.append(
+                f"- Hold budget on {name} because performance is near benchmark with {conversions} conversions, CPA {cpa:.2f}, and CPC {cpc:.2f}."
+            )
+    return "\n\n".join(bullets)
     
 
 def run_budget_optimizer(dfs: dict, campaign_name: str | None = None) -> str:
@@ -103,12 +133,9 @@ def run_budget_optimizer(dfs: dict, campaign_name: str | None = None) -> str:
 
     result = generate_explanation(prompt)
 
-    if is_bad_llm_output(result):
+    if is_bad_llm_output(result) or not result.strip().startswith("-") or result.count('"') >= 4:
         print("⚠️ [budget_optimizer] fallback triggered", flush=True)
-        return (
-            "- Unable to generate budget recommendations right now.\n"
-            "- Try again or check campaign data quality."
-        )
+        return rule_based_budget_actions(context)
 
     print("📤 [budget_optimizer] result received", flush=True)
     return result

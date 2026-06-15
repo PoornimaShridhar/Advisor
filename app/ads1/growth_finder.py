@@ -46,13 +46,7 @@ def build_growth_finder_context(dfs: dict, campaign_name: str | None = None):
         ascending=[False, False, False],
     ).head(8)
 
-    df["growth_action"] = df.apply(
-        lambda row: (
-            f"Scale '{row['keyword']}' with a cautious bid or budget increase because it has "
-            f"{int(row['conversions'])} conversions at CPA {row['cpa']:.2f}."
-        ),
-        axis=1,
-    )
+    df["growth_action"] = "scale"
 
     keep_cols = [
         col
@@ -73,10 +67,33 @@ def build_growth_finder_prompt(context: dict) -> str:
     return (
         f"Write 3 to 5 bullet points of actionable growth opportunities for {name}.\n"
         "Use the growth_candidates list only. Suggest ways to scale winners, expand related intent, or increase budget on efficient areas.\n"
-        "Do not list weak keywords. Do not diagnose poor performance. Every bullet must include a growth action.\n"
-        "Use simple language. One growth opportunity per bullet. Start each line with '- '. No intro sentence.\n\n"
+        "Each bullet must mention the keyword, the growth action, and the evidence. Do not list weak keywords or diagnose poor performance.\n"
+        "Use simple language. One self-contained growth opportunity per bullet. Start each line with '- '. No intro sentence. Do not quote JSON values by themselves.\n\n"
         f"Data (JSON):\n{payload}"
     )
+
+
+def rule_based_growth_actions(context: dict) -> str:
+    rows = context.get("growth_candidates", [])
+    if not rows:
+        account_cpa = context.get("account_average_cpa", 0)
+        campaign_name = context.get("campaign_name", "this campaign")
+        return (
+            f"- No safe scale-up candidate found for {campaign_name} because its converting keywords are not efficient enough versus the account average CPA of {account_cpa}.\n"
+            "- Improve growth readiness first by cutting weak intent, tightening match types, and waiting for lower CPA before increasing budget."
+        )
+
+    bullets = []
+    for row in rows[:5]:
+        keyword = row.get("keyword", "this keyword")
+        conversions = row.get("conversions", 0)
+        cpa = row.get("cpa", 0)
+        cvr = row.get("cvr", 0)
+        ctr = row.get("ctr", 0)
+        bullets.append(
+            f"- Scale '{keyword}' because it has {conversions} conversions at CPA {cpa:.2f}, CVR {cvr:.2f}%, and CTR {ctr:.2f}%; test a cautious bid or budget increase."
+        )
+    return "\n\n".join(bullets)
 
 def run_growth_finder(dfs: dict, campaign_name: str | None = None) -> str:
     print("\n🚀 [growth_finder] STARTED", flush=True)
@@ -86,11 +103,7 @@ def run_growth_finder(dfs: dict, campaign_name: str | None = None) -> str:
 
     context = build_growth_finder_context(dfs, campaign_name)
     if not context.get("growth_candidates"):
-        account_cpa = context.get("account_average_cpa", 0)
-        return (
-            f"- No safe scale-up candidate found for {campaign_name} because its converting keywords are not efficient enough versus the account average CPA of {account_cpa}.\n"
-            "- Improve growth readiness first by cutting weak intent, tightening match types, and waiting for lower CPA before increasing budget."
-        )
+        return rule_based_growth_actions(context)
 
     print("🧠 [growth_finder] context built", flush=True)
 
@@ -100,12 +113,9 @@ def run_growth_finder(dfs: dict, campaign_name: str | None = None) -> str:
 
     result = generate_explanation(prompt)
 
-    if is_bad_llm_output(result):
+    if is_bad_llm_output(result) or not result.strip().startswith("-") or result.count('"') >= 4:
         print("⚠️ [growth_finder] fallback triggered", flush=True)
-        return (
-            "- Unable to generate scaling opportunities right now.\n"
-            "- Try again or check data quality."
-        )
+        return rule_based_growth_actions(context)
 
     print("📤 [growth_finder] result received", flush=True)
     return result

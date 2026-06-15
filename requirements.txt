@@ -3,7 +3,7 @@
 
 nvidia-cublas-cu12
 nvidia-cuda-runtime-cu12
-llama-cpp-python==0.3.23
+llama-cpp-python==0.3.29
 
 gradio>=5.0.0
 spaces>=0.43.0

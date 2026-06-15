@@ -33,7 +33,7 @@ The app combines live Google Ads data with sample demo data, then turns campaign
 
 ## Screenshots
 
-![Dashboard](docs/assets/dashboard.png)
+![Dashboard](docs/superpowers/2026-06-15_23h10_57.png)
 
 ## Demo Focus
 

@@ -23,7 +23,7 @@ The app combines live Google Ads data with sample demo data, then turns campaign
 
 ## Screenshots
 
- `docs/assets/dashboard.png` 
+![Dashboard](docs/assets/dashboard.png)
 
 ## Demo Focus
 

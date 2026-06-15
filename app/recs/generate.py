@@ -52,7 +52,8 @@ def _looks_like_garbage(text: str) -> bool:
     if re.search(r"(?:\d[\s\n]+){6,}", text):
         return True
     digit_ratio = sum(ch.isdigit() for ch in text) / max(len(text), 1)
-    return digit_ratio > 0.22
+    bullet_count = sum(1 for ln in text.splitlines() if ln.strip().startswith("-"))
+    return digit_ratio > 0.35 and bullet_count < 2
 
 
 def is_fallback_output(text: str) -> bool:

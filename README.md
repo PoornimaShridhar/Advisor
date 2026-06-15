@@ -21,6 +21,8 @@ Advisor is a local-first Google Ads analysis dashboard for small businesses. It 
 
 The app combines live Google Ads data with sample demo data, then turns campaign metrics into clear recommendations through a fine-tuned GGUF model running with `llama.cpp`, plus rule-based logic for budget-sensitive decisions.
 
+**Fine-tuned model:** [ps1811/advisor-minicpm-finetuned-gguf](https://huggingface.co/ps1811/advisor-minicpm-finetuned-gguf/tree/main)
+
 ## Screenshots
 
 ![Dashboard](docs/assets/dashboard.png)
@@ -85,7 +87,7 @@ app.py
 
 Advisor uses a fine-tuned MiniCPM GGUF model hosted on Hugging Face:
 
-<https://huggingface.co/ps1811/advisor-minicpm-finetuned-gguf/tree/main>
+[ps1811/advisor-minicpm-finetuned-gguf](https://huggingface.co/ps1811/advisor-minicpm-finetuned-gguf/tree/main)
 
 The model is downloaded with `hf_hub_download` and loaded through `llama-cpp-python`.
 

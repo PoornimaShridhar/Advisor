@@ -15,3 +15,10 @@ docs/assets/*.png
 docs/assets/*.jpg
 docs/assets/*.jpeg
 docs/assets/*.gif
+
+!fine_tuning/GGUF_CONVERSION.md
+!fine_tuning/README.md
+!fine_tuning/MODEL_CARD.md
+!fine_tuning/data/.gitkeep
+fine_tuning/data/**/*.jsonl
+fine_tuning/data/**/*.csv

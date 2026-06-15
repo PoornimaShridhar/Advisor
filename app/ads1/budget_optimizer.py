@@ -1,6 +1,4 @@
-import json
 import pandas as pd
-from app.recs.generate import generate_explanation, is_bad_llm_output
 
 def build_budget_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
@@ -75,18 +73,6 @@ def build_budget_optimizer_context(dfs: dict, campaign_name: str | None = None):
         "budget_actions": action_rows.round(2).to_dict("records")
     }
 
-def build_budget_optimizer_prompt(context: dict) -> str:
-    payload = json.dumps(context, indent=2, default=str)
-    name = context.get("campaign_name", "this account")
-
-    return (
-        f"Write 3 to 5 bullet points of actionable budget optimization insights for {name}.\n"
-        "Use the budget_actions list only. Each bullet must mention the campaign or keyword name, the budget action, and the evidence.\n"
-        "Use simple language. One self-contained budget action per bullet. Start each line with '- '. No intro sentence. Do not quote JSON values by themselves.\n\n"
-        f"Data (JSON):\n{payload}"
-    )
-
-
 def rule_based_budget_actions(context: dict) -> str:
     rows = context.get("budget_actions", [])
     if not rows:
@@ -124,18 +110,5 @@ def run_budget_optimizer(dfs: dict, campaign_name: str | None = None) -> str:
         return "⚠️ No campaign data available."
 
     context = build_budget_optimizer_context(dfs, campaign_name)
-
     print("🧠 [budget_optimizer] context built", flush=True)
-
-    prompt = build_budget_optimizer_prompt(context)
-
-    print("✍️ [budget_optimizer] prompt built", flush=True)
-
-    result = generate_explanation(prompt)
-
-    if is_bad_llm_output(result) or not result.strip().startswith("-") or result.count('"') >= 4:
-        print("⚠️ [budget_optimizer] fallback triggered", flush=True)
-        return rule_based_budget_actions(context)
-
-    print("📤 [budget_optimizer] result received", flush=True)
-    return result
+    return rule_based_budget_actions(context)

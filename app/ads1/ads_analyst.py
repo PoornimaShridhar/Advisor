@@ -3,6 +3,7 @@ import json
 import pandas as pd
 
 from app.recs.generate import TARGET_CPL, generate_explanation, is_bad_llm_output
+from app.ads1.prompt_templates import ads_analyst_prompt
 
 # -------------------------
 # 1. DATA BUILDERS
@@ -133,11 +134,7 @@ def build_ads_analyst_context(dfs: dict, campaign_name: str | None = None) -> di
 def build_ads_analyst_prompt(context: dict) -> str:
     payload = json.dumps(context, indent=2, default=str)
     name = context.get("campaign_name", "this campaign")
-    return (
-        f"Write 3 to 5 bullet points of actionable Google Ads insights for {name}.\n"
-        "Use simple language. One insight per bullet. Start each line with '- '. No intro sentence.\n\n"
-        f"Data (JSON):\n{payload}"
-    )
+    return ads_analyst_prompt(name, payload)
 
 
 def rule_based_insights(context: dict) -> str:

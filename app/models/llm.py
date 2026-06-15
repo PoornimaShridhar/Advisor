@@ -6,8 +6,11 @@ from typing import Any
 
 from huggingface_hub import hf_hub_download
 
-HF_REPO = os.getenv("LLAMA_HF_REPO", "openbmb/MiniCPM5-1B-GGUF")
-HF_FILENAME = os.getenv("LLAMA_HF_FILENAME", "MiniCPM5-1B-Q4_K_M.gguf")
+# HF_REPO = os.getenv("LLAMA_HF_REPO", "openbmb/MiniCPM5-1B-GGUF")
+# HF_FILENAME = os.getenv("LLAMA_HF_FILENAME", "MiniCPM5-1B-Q4_K_M.gguf")
+
+LLAMA_HF_REPO = os.getenv("LLAMA_HF_REPO", "ps1811/advisor-minicpm-finetuned-gguf")
+LLAMA_HF_FILENAME= os.getenv("LLAMA_HF_FILENAME", "advisor-minicpm-q4_k_m.gguf")
 
 _model: Any = None
 _init_lock = threading.Lock()

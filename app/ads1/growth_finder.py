@@ -1,6 +1,4 @@
-import json
 import pandas as pd
-from app.recs.generate import generate_explanation, is_bad_llm_output
 
 def build_growth_finder_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
@@ -60,19 +58,6 @@ def build_growth_finder_context(dfs: dict, campaign_name: str | None = None):
         "growth_candidates": df[keep_cols].round(2).to_dict("records")
     }
 
-def build_growth_finder_prompt(context: dict) -> str:
-    payload = json.dumps(context, indent=2, default=str)
-    name = context.get("campaign_name", "this account")
-
-    return (
-        f"Write 3 to 5 bullet points of actionable growth opportunities for {name}.\n"
-        "Use the growth_candidates list only. Suggest ways to scale winners, expand related intent, or increase budget on efficient areas.\n"
-        "Each bullet must mention the keyword, the growth action, and the evidence. Do not list weak keywords or diagnose poor performance.\n"
-        "Use simple language. One self-contained growth opportunity per bullet. Start each line with '- '. No intro sentence. Do not quote JSON values by themselves.\n\n"
-        f"Data (JSON):\n{payload}"
-    )
-
-
 def rule_based_growth_actions(context: dict) -> str:
     rows = context.get("growth_candidates", [])
     if not rows:
@@ -102,20 +87,5 @@ def run_growth_finder(dfs: dict, campaign_name: str | None = None) -> str:
         return "⚠️ No keyword data available."
 
     context = build_growth_finder_context(dfs, campaign_name)
-    if not context.get("growth_candidates"):
-        return rule_based_growth_actions(context)
-
     print("🧠 [growth_finder] context built", flush=True)
-
-    prompt = build_growth_finder_prompt(context)
-
-    print("✍️ [growth_finder] prompt built", flush=True)
-
-    result = generate_explanation(prompt)
-
-    if is_bad_llm_output(result) or not result.strip().startswith("-") or result.count('"') >= 4:
-        print("⚠️ [growth_finder] fallback triggered", flush=True)
-        return rule_based_growth_actions(context)
-
-    print("📤 [growth_finder] result received", flush=True)
-    return result
+    return rule_based_growth_actions(context)

@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 from app.recs.generate import generate_explanation, is_bad_llm_output
+from app.ads1.prompt_templates import search_term_cleaner_prompt
 
 # -------------------------
 # Feature engineering only
@@ -65,12 +66,7 @@ def build_search_optimizer_prompt(context: dict) -> str:
     payload = json.dumps(context, indent=2, default=str)
     name = context.get("campaign_name", "this campaign")
 
-    return (
-        f"Write 3 to 5 bullet points of actionable search term cleanup insights for {name}.\n"
-        "Use the search_terms list only. total_cost is total spend for that search term; cpc is cost per click.\n"
-        "Each bullet must mention the search term, the action, and the evidence. Use simple language. Start each line with '- '. No intro sentence.\n\n"
-        f"Data (JSON):\n{payload}"
-    )
+    return search_term_cleaner_prompt(name, payload)
 
 
 # -------------------------

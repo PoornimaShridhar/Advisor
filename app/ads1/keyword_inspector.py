@@ -2,6 +2,7 @@ import json
 import pandas as pd
 
 from app.recs.generate import generate_explanation, is_bad_llm_output
+from app.ads1.prompt_templates import keyword_inspector_prompt
 
 
 # -------------------------
@@ -27,12 +28,7 @@ def build_keyword_features(df: pd.DataFrame) -> pd.DataFrame:
 def build_keyword_prompt(context: dict) -> str:
     payload = json.dumps(context, indent=2, default=str)
 
-    return (
-        "Write 3 to 5 bullet points of actionable keyword performance insights.\n"
-        "Classify individual keywords as winning, wasted spend, or scaling opportunities using CTR, cost, and conversions.\n"
-        "Use simple language. One insight per bullet. Start each line with '- '. No intro sentence.\n\n"
-        f"Data (JSON):\n{payload}"
-    )
+    return keyword_inspector_prompt(payload)
 # -------------------------
 # Main runner
 # -------------------------

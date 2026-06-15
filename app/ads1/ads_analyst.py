@@ -145,54 +145,59 @@ def rule_based_insights(context: dict) -> str:
     bullets: list[str] = []
 
     if c["leads"] == 0:
-        bullets.append("- No conversions recorded — review targeting, landing page, and conversion tracking.")
+        bullets.append("- No conversions recorded - review targeting, landing page, and conversion tracking.")
     elif c["cpl"] > TARGET_CPL:
         bullets.append(
-            f"- CPL is ${c['cpl']:.2f}, above the ${TARGET_CPL:.0f} target — tighten bids on expensive terms."
+            f"- CPL is ${c['cpl']:.2f}, above the ${TARGET_CPL:.0f} target - tighten bids on expensive terms."
         )
     else:
-        bullets.append(f"- CPL is ${c['cpl']:.2f} with {c['leads']} leads — performance is within a workable range.")
+        bullets.append(f"- CPL is ${c['cpl']:.2f} with {c['leads']} leads - performance is within a workable range.")
 
     if trend["spend_change_pct"] > 10 and trend["clicks_change_pct"] < trend["spend_change_pct"]:
-        bullets.append("- Spend is rising faster than clicks — efficiency is slipping; audit keyword bids.")
+        bullets.append("- Spend is rising faster than clicks - efficiency is slipping; audit keyword bids.")
 
     if signals["wasted_spend_ratio"] > 0.2:
         bullets.append(
-            f"- About {signals['wasted_spend_ratio'] * 100:.0f}% of keywords have zero conversions — pause or cut budget there."
+            f"- About {signals['wasted_spend_ratio'] * 100:.0f}% of keywords have zero conversions - pause or cut budget there."
         )
 
     for row in drivers.get("best_keywords", [])[:1]:
         bullets.append(
-            f"- '{row['keyword']}' is a top performer ({row['conversions']} conversions) — consider scaling budget."
+            f"- '{row['keyword']}' is a top performer ({row['conversions']} conversions) - consider scaling budget."
         )
 
     for row in drivers.get("worst_keywords", [])[:1]:
         if row.get("conversions", 0) == 0:
-            bullets.append(f"- '{row['keyword']}' spent without converting — reduce bids or pause.")
+            bullets.append(f"- '{row['keyword']}' spent without converting - reduce bids or pause.")
 
     if len(bullets) < 3:
-        bullets.append(f"- CTR is {c['ctr']:.2f}% across {c['impressions']:,} impressions — test stronger ad copy if CTR is low.")
+        bullets.append(f"- CTR is {c['ctr']:.2f}% across {c['impressions']:,} impressions - test stronger ad copy if CTR is low.")
 
     return "\n\n".join(bullets[:5])
 
 
 def run_ads_analyst_card(dfs: dict, campaign_name: str | None = None) -> str:
-    print("\n🚀 [analyst_card] STARTED", flush=True)
+    print("\nSTART [analyst_card] STARTED", flush=True)
 
     if not dfs:
-        return "⚠️ No campaign data — select a campaign on the Dashboard tab first."
+        return "WARNING: No campaign data - select a campaign on the Dashboard tab first."
 
     scoped = _dfs_for_campaign(dfs, campaign_name)
     context = build_ads_analyst_context(scoped, campaign_name)
-    print("🧠 [analyst_card] context built", flush=True)
+    print("CONTEXT [analyst_card] context built", flush=True)
 
     prompt = build_ads_analyst_prompt(context)
-    print("✍️ [analyst_card] prompt built", flush=True)
+    print("PROMPT [analyst_card] prompt built", flush=True)
 
     result = generate_explanation(prompt)
+    print(f"[analyst_card] raw/clean LLM result preview: {str(result)[:400]}", flush=True)
+    if "Analysis failed:" in str(result):
+        print("[analyst_card] LLM call failed; returning the backend error instead of hiding it.", flush=True)
+        return result
+
     if is_bad_llm_output(result):
-        print("⚠️ [analyst_card] LLM fallback — using rule-based insights", flush=True)
+        print("WARNING [analyst_card] LLM fallback - using rule-based insights", flush=True)
         result = rule_based_insights(context)
 
-    print("\n📤 [analyst_card] LLM result received", flush=True)
+    print("\nRESULT [analyst_card] LLM result received", flush=True)
     return result

@@ -57,9 +57,11 @@ def _looks_like_garbage(text: str) -> bool:
 
 
 def is_fallback_output(text: str) -> bool:
+    lower = (text or "").lower()
     return (
         not text
-        or text.startswith("⚠️")
+        or lower.startswith("warning:")
+        or "analysis failed:" in lower
         or text.startswith("This recommendation was generated")
     )
 
@@ -74,7 +76,7 @@ def sanitize_explanation(text: str, rec: Dict | None = None) -> str:
 
     bullets: list[str] = []
     for ln in lines:
-        if re.match(r"^[-•*]\s+\S", ln):
+        if re.match(r"^[-*]\s+\S", ln):
             bullets.append(ln)
         elif re.match(r"^\d+\.\s+\S", ln):
             bullets.append(re.sub(r"^\d+\.\s+", "- ", ln))
@@ -89,14 +91,13 @@ def sanitize_explanation(text: str, rec: Dict | None = None) -> str:
 
 
 def _messages_to_prompt(messages: list[dict[str, str]]) -> str:
-    chunks: list[str] = []
-    for msg in messages:
-        role = msg["role"]
-        content = msg["content"]
-        chunks.append(f"<|im_start|>{role}\n{content}{_IM_END}\n")
-    chunks.append("<|im_start|>assistant\n")
-    return "".join(chunks)
-
+    system = next((msg["content"] for msg in messages if msg["role"] == "system"), "")
+    user = next((msg["content"] for msg in messages if msg["role"] == "user"), "")
+    return (
+        f"{system}\n\n"
+        f"Request:\n{user}\n\n"
+        "Answer with only the final bullet points:\n"
+    )
 
 def _message_text(message: dict) -> str:
     content = (message.get("content") or "").strip()
@@ -109,21 +110,24 @@ def _message_text(message: dict) -> str:
 def _infer(llm, messages: list[dict[str, str]]) -> str:
     max_tokens = int(os.getenv("LLAMA_MAX_TOKENS", "384"))
     temperature = float(os.getenv("LLAMA_TEMPERATURE", "0.35"))
+    use_chat_completion = os.getenv("LLAMA_USE_CHAT_COMPLETION", "0") == "1"
 
-    try:
-        out = llm.create_chat_completion(
-            messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
-        )
-        raw = _message_text(out["choices"][0]["message"])
-        if raw and not _looks_like_garbage(raw):
-            print("✅ [generate_explanation] via create_chat_completion", flush=True)
-            return raw
-        print("⚠️ [generate_explanation] chat_completion empty/garbage — raw fallback", flush=True)
-    except TypeError as exc:
-        print(f"⚠️ [generate_explanation] chat_completion failed: {exc}", flush=True)
+    if use_chat_completion:
+        try:
+            out = llm.create_chat_completion(
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature,
+            )
+            raw = _message_text(out["choices"][0]["message"])
+            if raw and not _looks_like_garbage(raw):
+                print("OK [generate_explanation] via create_chat_completion", flush=True)
+                return raw
+            print("WARNING [generate_explanation] chat_completion empty/garbage - raw fallback", flush=True)
+        except Exception as exc:
+            print(f"WARNING [generate_explanation] chat_completion failed - raw fallback: {repr(exc)}", flush=True)
 
+    print("LLM [generate_explanation] using raw llama prompt", flush=True)
     out = llm(
         _messages_to_prompt(messages),
         max_tokens=max_tokens,
@@ -145,12 +149,12 @@ def _coerce_prompt(prompt: str | Dict, rec: Dict | None) -> tuple[str, Dict | No
 
 
 def generate_explanation(prompt: str | Dict, rec: Dict | None = None, stream: bool = False):
-    print("\n🔥 [generate_explanation] CALLED", flush=True)
+    print("\nLLM [generate_explanation] CALLED", flush=True)
 
     try:
         user_content, rec = _coerce_prompt(prompt, rec)
         print(
-            f"🧾 [generate_explanation] prompt type={type(prompt).__name__} "
+            f"PROMPT [generate_explanation] prompt type={type(prompt).__name__} "
             f"len={len(user_content)}",
             flush=True,
         )
@@ -164,27 +168,28 @@ def generate_explanation(prompt: str | Dict, rec: Dict | None = None, stream: bo
 
         with _infer_lock:
             llm = load_model()
-            print("🧠 [generate_explanation] model loaded", flush=True)
-            print("🚀 [generate_explanation] calling LLM...", flush=True)
+            print("MODEL [generate_explanation] model loaded", flush=True)
+            print("LLM [generate_explanation] calling LLM...", flush=True)
             raw = _infer(llm, messages)
 
-        print("📡 [generate_explanation] response received", flush=True)
-        print("📄 [generate_explanation] raw output length:", len(raw), flush=True)
+        print("LLM [generate_explanation] response received", flush=True)
+        print("RAW [generate_explanation] raw output length:", len(raw), flush=True)
         if raw:
-            print("📄 [generate_explanation] raw preview:", raw[:400], flush=True)
+            print("RAW [generate_explanation] raw preview:", raw[:400], flush=True)
 
         clean = sanitize_explanation(raw, rec)
         if is_bad_llm_output(clean):
             clean = fallback_explanation(rec)
-        print("✨ [generate_explanation] cleaned output ready", flush=True)
+        print("OK [generate_explanation] cleaned output ready", flush=True)
         if stream:
             return iter([clean])
         return clean
 
     except Exception as e:
-        print("❌ [generate_explanation] ERROR:", repr(e), flush=True)
+        print("ERROR [generate_explanation] ERROR:", repr(e), flush=True)
         traceback.print_exc()
-        err = f"⚠️ Analysis failed: {e}"
+        err = f"WARNING: Analysis failed: {e}"
         if stream:
             return iter([err])
         return err
+

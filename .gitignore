@@ -6,3 +6,12 @@ adv/
 .DS_Store
 data/app.db
 client_secret.json
+graphify-out/cache/*
+*.json
+*.md
+*.html
+UI.md
+docs/assets/*.png
+docs/assets/*.jpg
+docs/assets/*.jpeg
+docs/assets/*.gif

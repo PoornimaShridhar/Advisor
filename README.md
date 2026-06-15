@@ -43,7 +43,7 @@ For the demo, the data is a combination of actual Google Ads data and generated 
 
 Watch the demo video:
 
-<https://youtu.be/uMYFXE_YxhU>
+<https://youtu.be/RrcHwtI6nHs>
 
 ## Social Post
 
